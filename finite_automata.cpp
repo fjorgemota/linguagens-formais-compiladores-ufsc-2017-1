@@ -3,6 +3,7 @@
 #include <map>
 #include <queue>
 #include <iostream>
+#include <list>
 #include <exception>
 
 using namespace std;
@@ -27,12 +28,19 @@ public:
         initial_state = f.initial_state;
         final_states = f.final_states;
     }
-    bool non_deterministic() {
+    FiniteAutomata(FiniteAutomata *f) {
+        states = f->states;
+        alphabet = f->alphabet;
+        transitions = f->transitions;
+        initial_state = f->initial_state;
+        final_states = f->final_states;
+    }
+
+    bool nonDeterministic() {
         for (string state: states) {
             map<string, set<string> > stateTransitions = transitions[state];
-            set<string> *closure = getClosure(state);
-            int closureSize = closure->size()-1;
-            delete closure;
+            set<string> closure = getClosure(state);
+            int closureSize = closure.size()-1;
             if (closureSize > 1) {
                 return true;
             }
@@ -81,23 +89,112 @@ public:
         transitions[source][symbol].insert(target);
     }
 
-    FiniteAutomata determinize() {
+    list<FiniteAutomata*> determinize() {
         if (initial_state.empty()) {
-
+            throw FiniteAutomataException("Initial State should be defined to determinize automata");
         }
+        FiniteAutomata *result = new FiniteAutomata(this);
+        queue<set<string> > q;
+        set<string> initialState = getClosure(initial_state);
+        q.push(initialState);
+        result->initial_state = "";
+        list<FiniteAutomata*> results;
+        while (!q.empty()) {
+            set<string> states = q.front();
+            q.pop();
+            string stateName = formatStates(states);
+            bool isFinal = false;
+            for (string state: states) {
+                if (result->final_states.count(state)) {
+                    isFinal = true;
+                    break;
+                }
+            }
+            result->addState(stateName, states == initialState, isFinal);
+            map<string, set<string> > stateTransitions;
+            stateTransitions = result->transitions[stateName];
+            for (string symbol: result->alphabet) {
+                set<string> newTransitions;
+                for (string state: states) {
+                    if (!result->transitions.count(state)) {
+                        continue;
+                    }
+                    set<string> tr = result->transitions[state][symbol];
+                    newTransitions.insert(tr.begin(), tr.end());
+                }
+                for (string new_transition: newTransitions) {
+                    set<string> closures = getClosure(new_transition);
+                    newTransitions.insert(closures.begin(), closures.end());
+                }
+                if (!newTransitions.empty()) {
+                    continue;
+                }
+                string newTransitionsName = formatStates(newTransitions);
+                stateTransitions[symbol].insert(newTransitionsName);
+                if (result->states.count(newTransitionsName)) {
+                    continue;
+                }
+                q.push(newTransitions);
+            }
+            results.push_back(result->removeDeadStates());
+            result = new FiniteAutomata(result);
+        }
+        return results;
     }
+
+    FiniteAutomata* removeDeadStates() {
+        FiniteAutomata *result = new FiniteAutomata(this);
+        set<string> oldStates, newStates;
+        oldStates.insert(result->initial_state);
+        while (oldStates!= newStates) {
+            newStates = oldStates;
+            for (string state: oldStates) {
+                if (!result->transitions.count(state)) {
+                    continue;
+                }
+                for (string symbol: result->alphabet) {
+                    if (!result->transitions[state].count(symbol)) {
+                        continue;
+                    }
+                    set<string> transition = result->transitions[state][symbol];
+                    states.insert(transition.begin(), transition.end());
+                }
+            }
+        }
+        for (string state: result->states) {
+            if (newStates.count(state)) {
+                continue;
+            }
+            result->transitions.erase(state);
+        }
+        result->states = newStates;
+        set <string> finalStates;
+        for (string state: result->final_states) {
+            if (!newStates.count(state)) {
+                continue;
+            }
+            finalStates.insert(state);
+        }
+        result->final_states = finalStates;
+        return result;
+    }
+
+    string getStates() {
+        return formatStates(states);
+    }
+
 private:
-    set<string>* getClosure(string state) {
-        set<string> *results = new set<string>();
+    set<string> getClosure(string state) {
+        set<string> results = set<string>();
         queue<string> q;
         q.push(state);
         while (!q.empty()) {
             string s = q.front();
             q.pop();
-            if (s.empty() || results->count(s) == 1) {
+            if (s.empty() || results.count(s) == 1) {
                 continue;
             }
-            results->insert(s);
+            results.insert(s);
             if (transitions[s].count(EPSILON)) {
                 for (string state: transitions[s][EPSILON]) {
                     q.push(state);
@@ -128,17 +225,37 @@ private:
 
 int main() {
     FiniteAutomata f;
+    f.addState("q0", true, true);
+    f.addState("q1", false, false);
+    f.addState("q3", false, false);
+    f.addState("q4", false, false);
+    f.addState("q5", false, false);
+    f.addState("q6", false, true);
     f.addSymbol("a");
     f.addSymbol("b");
-    f.addState("q0", true, false);
-    f.addState("q1", false, false);
-    f.addState("q2", false, false);
+    f.addSymbol("c");
     f.addTransition("q0", "a", "q1");
-    f.addTransition("q0", "b", "q2");
-    cout << f.non_deterministic() << endl;
-    FiniteAutomata f2 = f;
-    f2.addState("q3", false, false);
-    f2.addTransition("q0", EPSILON, "q3");
-    cout << f2.non_deterministic() << endl;
+    f.addTransition("q0", "b", "q1");
+    f.addTransition("q0", "b", "q3");
+    f.addTransition("q0", "c", "q3");
+    f.addTransition("q1", "b", "q0");
+    f.addTransition("q1", "b", "q6");
+    f.addTransition("q1", "c", "q4");
+    f.addTransition("q1", "c", "q6");
+    f.addTransition("q3", "a", "q5");
+    f.addTransition("q3", "a", "q6");
+    f.addTransition("q3", "b", "q0");
+    f.addTransition("q3", "b", "q6");
+    f.addTransition("q3", "b", "q0");
+    f.addTransition("q4", "a", "q1");
+    f.addTransition("q4", "b", "q1");
+    f.addTransition("q4", "b", "q3");
+    f.addTransition("q5", "b", "q1");
+    f.addTransition("q5", "b", "q3");
+    f.addTransition("q5", "c", "q3");
+    cout << f.nonDeterministic() << endl;
+    list<FiniteAutomata*> results = f.determinize();
+    cout << results.size() << endl;
+    cout << results.back()->getStates() << endl;
     return 0;
 }
