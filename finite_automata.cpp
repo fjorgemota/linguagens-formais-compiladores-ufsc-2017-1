@@ -21,19 +21,12 @@ public:
     FiniteAutomata() {
         addSymbol(EPSILON);
     }
-    FiniteAutomata(FiniteAutomata &f) {
+    FiniteAutomata(const FiniteAutomata &f) {
         states = f.states;
         alphabet = f.alphabet;
         transitions = f.transitions;
         initial_state = f.initial_state;
         final_states = f.final_states;
-    }
-    FiniteAutomata(FiniteAutomata *f) {
-        states = f->states;
-        alphabet = f->alphabet;
-        transitions = f->transitions;
-        initial_state = f->initial_state;
-        final_states = f->final_states;
     }
 
     bool nonDeterministic() {
@@ -89,93 +82,94 @@ public:
         transitions[source][symbol].insert(target);
     }
 
-    list<FiniteAutomata*> determinize() {
+    list<FiniteAutomata> determinize() {
         if (initial_state.empty()) {
             throw FiniteAutomataException("Initial State should be defined to determinize automata");
         }
-        FiniteAutomata *result = new FiniteAutomata(this);
+        FiniteAutomata result(*this);
         queue<set<string> > q;
         set<string> initialState = getClosure(initial_state);
         q.push(initialState);
-        result->initial_state = "";
-        list<FiniteAutomata*> results;
+        result.initial_state = "";
+        list<FiniteAutomata> results;
         while (!q.empty()) {
             set<string> states = q.front();
             q.pop();
             string stateName = formatStates(states);
             bool isFinal = false;
             for (string state: states) {
-                if (result->final_states.count(state)) {
+                if (result.final_states.count(state)) {
                     isFinal = true;
                     break;
                 }
             }
-            result->addState(stateName, states == initialState, isFinal);
+            result.addState(stateName, states == initialState, isFinal);
             map<string, set<string> > stateTransitions;
-            stateTransitions = result->transitions[stateName];
-            for (string symbol: result->alphabet) {
+            stateTransitions = result.transitions[stateName];
+            for (string symbol: result.alphabet) {
                 set<string> newTransitions;
                 for (string state: states) {
-                    if (!result->transitions.count(state)) {
+                    if (!result.transitions.count(state)) {
                         continue;
                     }
-                    set<string> tr = result->transitions[state][symbol];
+                    set<string> tr = result.transitions[state][symbol];
                     newTransitions.insert(tr.begin(), tr.end());
                 }
                 for (string new_transition: newTransitions) {
                     set<string> closures = getClosure(new_transition);
                     newTransitions.insert(closures.begin(), closures.end());
                 }
-                if (!newTransitions.empty()) {
+                if (newTransitions.empty()) {
                     continue;
                 }
                 string newTransitionsName = formatStates(newTransitions);
                 stateTransitions[symbol].insert(newTransitionsName);
-                if (result->states.count(newTransitionsName)) {
+                if (result.states.count(newTransitionsName)) {
                     continue;
                 }
                 q.push(newTransitions);
             }
-            results.push_back(result->removeDeadStates());
-            result = new FiniteAutomata(result);
+            result.transitions[stateName] = stateTransitions;
+            results.push_back(result.removeDeadStates());
+            result = FiniteAutomata(result);
         }
         return results;
     }
 
-    FiniteAutomata* removeDeadStates() {
-        FiniteAutomata *result = new FiniteAutomata(this);
+    FiniteAutomata removeDeadStates() {
+        FiniteAutomata result(*this);
         set<string> oldStates, newStates;
-        oldStates.insert(result->initial_state);
-        while (oldStates!= newStates) {
+        oldStates.insert(result.initial_state);
+        while (oldStates != newStates) {
             newStates = oldStates;
             for (string state: oldStates) {
-                if (!result->transitions.count(state)) {
+                if (!result.transitions.count(state)) {
                     continue;
                 }
-                for (string symbol: result->alphabet) {
-                    if (!result->transitions[state].count(symbol)) {
+                for (string symbol: result.alphabet) {
+                    if (!result.transitions[state].count(symbol)) {
                         continue;
                     }
-                    set<string> transition = result->transitions[state][symbol];
-                    states.insert(transition.begin(), transition.end());
+                    set<string> transition = result.transitions[state][symbol];
+                    oldStates.insert(transition.begin(), transition.end());
                 }
             }
         }
-        for (string state: result->states) {
+        for (string state: result.states) {
             if (newStates.count(state)) {
                 continue;
             }
-            result->transitions.erase(state);
+            result.transitions.erase(state);
         }
-        result->states = newStates;
+        result.states = newStates;
         set <string> finalStates;
-        for (string state: result->final_states) {
+        for (string state: result.final_states) {
             if (!newStates.count(state)) {
                 continue;
             }
             finalStates.insert(state);
         }
-        result->final_states = finalStates;
+        result.final_states = finalStates;
         return result;
     }
 
@@ -254,8 +248,8 @@ int main() {
     f.addTransition("q5", "b", "q3");
     f.addTransition("q5", "c", "q3");
     cout << f.nonDeterministic() << endl;
-    list<FiniteAutomata*> results = f.determinize();
+    list<FiniteAutomata> results = f.determinize();
     cout << results.size() << endl;
-    cout << results.back()->getStates() << endl;
+    cout << results.back().getStates() << endl;
     return 0;
 }
