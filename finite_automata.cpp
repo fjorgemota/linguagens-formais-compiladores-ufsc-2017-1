@@ -52,7 +52,6 @@ class FiniteAutomata {
             state.State(f.initial_state);
             state.Symbols("");
             actual_states.insert(state);
-            cout << generated.empty() << endl;
         }
 
         bool operator!=(FiniteAutomataGenerator _)
