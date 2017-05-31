@@ -230,13 +230,13 @@ public:
                 q.push(newTransitions);
             }
             result.transitions[stateName] = stateTransitions;
-            results.push_back(result.removeDeadStates());
+            results.push_back(result.removeUnreachableStates());
             result = FiniteAutomata(result);
         }
         return results;
     }
 
-    FiniteAutomata removeDeadStates() {
+    FiniteAutomata removeUnreachableStates() {
         FiniteAutomata result(*this);
         set<string> newStates;
         queue<string> q;
@@ -261,21 +261,39 @@ public:
                 }
             }
         }
-        for (string state: result.states) {
-            if (newStates.count(state)) {
-                continue;
-            }
-            result.transitions.erase(state);
-        }
-        result.states = newStates;
-        set <string> finalStates;
+        result.setStates(newStates);
+        return result;
+    }
+
+    FiniteAutomata removeDeadStates() {
+        FiniteAutomata result(*this);
+        set<string> newStates;
+        queue<string> q;
         for (string state: result.final_states) {
-            if (!newStates.count(state)) {
-                continue;
-            }
-            finalStates.insert(state);
+            q.push(state);
         }
-        result.final_states = finalStates;
+        while (!q.empty()) {
+            string state = q.front();
+            newStates.insert(state);
+            q.pop();
+            for (string fromState: result.states) {
+                if (!result.transitions.count(fromState)) {
+                    continue;
+                }
+                for (char symbol: result.alphabet) {
+                    if (!result.transitions[fromState].count(symbol)) {
+                        continue;
+                    }
+                    if (result.transitions[fromState][symbol].count(state)) {
+                        if (newStates.count(fromState)) {
+                            continue;
+                        }
+                        q.push(fromState);
+                    }
+                }
+            }
+        }
+        result.setStates(newStates);
         return result;
     }
 
@@ -339,6 +357,25 @@ private:
         s.append("]");
         return s;
     }
+
+    void setStates(set<string> newStates) {
+        for (string state: states) {
+            if (newStates.count(state)) {
+                continue;
+            }
+            transitions.erase(state);
+        }
+        states = newStates;
+        set <string> finalStates;
+        for (string state: final_states) {
+            if (!newStates.count(state)) {
+                continue;
+            }
+            finalStates.insert(state);
+        }
+        final_states = finalStates;
+    }
+
     set<string> states;
     set<char> alphabet;
     map<string, map<char, set<string> > > transitions;
