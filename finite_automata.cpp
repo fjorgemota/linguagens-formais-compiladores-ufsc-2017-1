@@ -297,6 +297,123 @@ public:
         return result;
     }
 
+    FiniteAutomata removeEquivalentStates() {
+        if (nonDeterministic()) {
+            throw FiniteAutomataException("This method works only on deterministic finite automata");
+        }
+        FiniteAutomata result(*this);
+        set<set<string> > oldEquivalenceClasses, newEquivalenceClasses;
+        set<string> K, KF;
+        K = result.final_states;
+        for (string state: result.states) {
+            if (K.count(state)) {
+                continue;
+            }
+            KF.insert(state);
+        }
+        KF.insert("&");
+        newEquivalenceClasses.insert(K);
+        newEquivalenceClasses.insert(KF);
+        while (oldEquivalenceClasses != newEquivalenceClasses) {
+            oldEquivalenceClasses = newEquivalenceClasses;
+            newEquivalenceClasses.clear();
+            for (set<string> equivalenceClass: oldEquivalenceClasses) {
+                map<list<int>, set<string>> equivalenceClasses;
+                for (string state: equivalenceClass) {
+                    list<int> foundEquivalenceClasses;
+                    for (char symbol: result.alphabet) {
+                        set<string> transition = result.transitions[state][symbol];
+                        int i = 0;
+                        for (set<string> foundEquivalenceClass: oldEquivalenceClasses) {
+                            bool found = false;
+                            if (transition.empty()) {
+                                if (foundEquivalenceClass.count("&")) {
+                                    foundEquivalenceClasses.push_back(i);
+                                    found = true;
+                                }
+                            } else {
+                                for (string toState: transition) {
+                                    if (foundEquivalenceClass.count(toState)) {
+                                        foundEquivalenceClasses.push_back(i);
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (found) {
+                                break;
+                            }
+                            i++;
+                        }
+                    }
+                    equivalenceClasses[foundEquivalenceClasses].insert(state);
+                }
+                for (auto &item: equivalenceClasses) {
+                    set<string> equivalenceClass = item.second;
+                    newEquivalenceClasses.insert(equivalenceClass);
+                }
+            }
+        }
+        int i = 0;
+        set<string> newStates, newFinalStates;
+        string newInitialState;
+        map<set<string>, string> newNames;
+        map<string, set<string>> statesToEquivalenceClasses;
+        for (set<string> equivalenceClass: newEquivalenceClasses) {
+            string stateName = "q"+to_string(i);
+            bool isFinal = false;
+            for (string state: equivalenceClass) {
+                if (result.final_states.count(state)) {
+                    isFinal = true;
+                }
+                if (state == "&" && equivalenceClass.size() == 1) {
+                    stateName = "-";
+                }
+                statesToEquivalenceClasses[state] = equivalenceClass;
+            }
+            if (stateName == "-") {
+                continue;
+            }
+            if (equivalenceClass.count(result.initial_state)) {
+                newInitialState = stateName;
+            }
+            if (isFinal) {
+                newFinalStates.insert(stateName);
+            }
+            newNames[equivalenceClass] = stateName;
+            newStates.insert(stateName);
+            i++;
+        }
+        for (set<string> equivalenceClass: newEquivalenceClasses) {
+            string stateName = newNames[equivalenceClass];
+            for (string state: equivalenceClass) {
+                for (char symbol: result.alphabet) {
+                    string toState;
+                    if (result.transitions[state].count(symbol) &&
+                            !result.transitions[state][symbol].empty()) {
+                        for (string to: result.transitions[state][symbol]) {
+                            toState = to;
+                            // Just get the first element and break the loop..
+                            break;
+                        }
+                    } else {
+                        toState = "&";
+                    }
+                    set<string> toEquivalenceClass = statesToEquivalenceClasses[toState];
+                    if (toState == "&" && toEquivalenceClass.size() == 1) {
+                        // Epsilon without equivalent states..just ignore
+                        continue;
+                    }
+                    toState = newNames[toEquivalenceClass];
+                    result.transitions[stateName][symbol].insert(toState);
+                }
+            }
+        }
+        result.initial_state = newInitialState;
+        result.setStates(newStates, newFinalStates);
+        return result;
+    }
+
     string getStates() {
         return formatStates(states);
     }
@@ -318,6 +435,114 @@ public:
             }
         }
         return false;
+    }
+
+    string toASCIITable() {
+        string result;
+        map<char, int> columnWidth;
+        int largestState = 5;
+        for (string state: states) {
+            int length = state.length()+2;
+            if (initial_state == state) {
+                length += 2;
+            }
+            if (final_states.count(state)) {
+                length += 1;
+            }
+            if (length > largestState) {
+                largestState = length;
+            }
+        }
+        for (char symbol: alphabet) {
+            int largestTransition = 5;
+            bool found = false;
+            for (string state: states) {
+                if (!transitions[state][symbol].empty()) {
+                    found = true;
+                }
+                string transition = formatStates(transitions[state][symbol], false);
+                int length = transition.length()+3;
+                if (length > largestTransition) {
+                    largestTransition = length;
+                }
+            }
+            if (found) {
+                columnWidth[symbol] = largestTransition;
+            }
+        }
+        int tableWidth = alphabet.size()+1+largestState;
+        for (auto column: columnWidth) {
+            tableWidth += column.second;
+        }
+        result.append(tableWidth, '-');
+        result.append("\n");
+        result.append("| &");
+        result.append(largestState-2, ' ');
+        for (char symbol: alphabet) {
+            bool found = false;
+            for (string state: states) {
+                if (!transitions[state][symbol].empty()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                continue;
+            }
+            result.append("| ");
+            result.append(1, symbol);
+            result.append(columnWidth[symbol]-2, ' ');
+        }
+        result.append("|\n");
+        result.append(tableWidth, '-');
+        result.append("\n");
+        queue<string> q;
+        q.push(initial_state);
+        for (string state: states) {
+            if (final_states.count(state)) {
+                continue;
+            }
+            q.push(state);
+        }
+        for (string state: final_states) {
+            if (state == initial_state) {
+                continue;
+            }
+            q.push(state);
+        }
+        while (!q.empty()) {
+            string state = q.front();
+            q.pop();
+            result.append("| ");
+            int margin = 1;
+            if (final_states.count(state)) {
+                result.append("*");
+                margin++;
+            }
+            if (initial_state == state) {
+                result.append("->");
+                margin += 2;
+            }
+            result.append(state);
+            result.append(largestState-margin-state.length(), ' ');
+            for (char symbol: alphabet) {
+                if (transitions[state][symbol].empty()) {
+                    if (columnWidth.count(symbol)) {
+                        result.append("| -");
+                        result.append(columnWidth[symbol]-2, ' ');
+                    }
+                    continue;
+                }
+                result.append("| ");
+                string transition = formatStates(transitions[state][symbol], false);
+                result.append(transition);
+                result.append(columnWidth[symbol]-transition.length()-1, ' ');
+            }
+            result.append("|\n");
+            result.append(tableWidth, '-');
+            result.append("\n");
+        }
+        return result;
     }
 
     FiniteAutomataGenerator generates() {
@@ -344,8 +569,11 @@ private:
         }
         return results;
     }
-    string formatStates(set<string> states) {
-        string s = "[";
+    string formatStates(set<string> states, bool brackets=true) {
+        string s;
+        if (brackets) {
+            s = "[";
+        }
         int c = states.size();
         for (string state: states) {
             s.append(state);
@@ -354,11 +582,13 @@ private:
                 s.append(",");
             }
         }
-        s.append("]");
+        if (brackets) {
+            s.append("]");
+        }
         return s;
     }
 
-    void setStates(set<string> newStates) {
+    void setStates(set<string> newStates, set<string> finalStates) {
         for (string state: states) {
             if (newStates.count(state)) {
                 continue;
@@ -366,6 +596,10 @@ private:
             transitions.erase(state);
         }
         states = newStates;
+        final_states = finalStates;
+    }
+
+    void setStates(set<string> newStates) {
         set <string> finalStates;
         for (string state: final_states) {
             if (!newStates.count(state)) {
@@ -373,7 +607,7 @@ private:
             }
             finalStates.insert(state);
         }
-        final_states = finalStates;
+        setStates(newStates, finalStates);
     }
 
     set<string> states;
@@ -385,7 +619,30 @@ private:
 
 #ifdef FINITE_AUTOMATA_TEST
 int main() {
-    FiniteAutomata f;
+    FiniteAutomata f, m;
+//    f.addState("[S]", true, false);
+//    f.addState("[AD]", false, false);
+//    f.addState("[E]", false, true);
+//    f.addState("[ABD]", false, false);
+//    f.addState("[CE]", false, true);
+//    f.addState("[ABE]", false, true);
+//    f.addSymbol('0');
+//    f.addSymbol('1');
+//    f.addTransition("[S]", '0', "[AD]");
+//    f.addTransition("[S]", '1', "[E]");
+//    f.addTransition("[AD]", '0', "[ABD]");
+//    f.addTransition("[AD]", '1', "[E]");
+//    f.addTransition("[E]", '0', "[E]");
+//    f.addTransition("[E]", '1', "[E]");
+//    f.addTransition("[ABD]", '0', "[ABD]");
+//    f.addTransition("[ABD]", '1', "[CE]");
+//    f.addTransition("[CE]", '0', "[ABE]");
+//    f.addTransition("[CE]", '1', "[E]");
+//    f.addTransition("[ABE]", '0', "[ABE]");
+//    f.addTransition("[ABE]", '1', "[CE]");
+
+    f = FiniteAutomata();
+
     f.addState("q0", true, true);
     f.addState("q1", false, false);
     f.addState("q3", false, false);
@@ -395,39 +652,52 @@ int main() {
     f.addSymbol('a');
     f.addSymbol('b');
     f.addSymbol('c');
-    f.addTransition("q0", 'a', "q1");
-    f.addTransition("q1", 'b', "q3");
-    f.addTransition("q3", 'b', "q4");
-    f.addTransition("q4", 'a', "q5");
-    f.addTransition("q5", 'a', "q6");
-
 //    f.addTransition("q0", 'a', "q1");
-//    f.addTransition("q0", 'b', "q1");
-//    f.addTransition("q0", 'b', "q3");
-//    f.addTransition("q0", 'c', "q3");
-//    f.addTransition("q1", 'b', "q0");
-//    f.addTransition("q1", 'b', "q6");
-//    f.addTransition("q1", 'c', "q4");
-//    f.addTransition("q1", 'c', "q6");
-//    f.addTransition("q3", 'a', "q5");
-//    f.addTransition("q3", 'a', "q6");
-//    f.addTransition("q3", 'b', "q0");
-//    f.addTransition("q3", 'b', "q6");
-//    f.addTransition("q3", 'b', "q0");
-//    f.addTransition("q4", 'a', "q1");
-//    f.addTransition("q4", 'b', "q1");
-//    f.addTransition("q4", 'b', "q3");
-//    f.addTransition("q5", 'b', "q1");
-//    f.addTransition("q5", 'b', "q3");
-//    f.addTransition("q5", 'c', "q3");
-    cout << f.nonDeterministic() << endl;
-    list<FiniteAutomata> results = f.determinize();
-    cout << results.size() << endl;
-    cout << results.back().getStates() << endl;
-    cout << results.back().nonDeterministic() << endl;
-    for (string s: f.generates()) {
-        cout << '"' << s << '"' << endl;
-    }
+//    f.addTransition("q1", 'b', "q3");
+//    f.addTransition("q3", 'b', "q4");
+//    f.addTransition("q4", 'a', "q5");
+//    f.addTransition("q5", 'a', "q6");
+
+    f.addTransition("q0", 'a', "q1");
+    f.addTransition("q0", 'b', "q1");
+    f.addTransition("q0", 'b', "q3");
+    f.addTransition("q0", 'c', "q3");
+    f.addTransition("q1", 'b', "q0");
+    f.addTransition("q1", 'b', "q6");
+    f.addTransition("q1", 'c', "q4");
+    f.addTransition("q1", 'c', "q6");
+    f.addTransition("q3", 'a', "q5");
+    f.addTransition("q3", 'a', "q6");
+    f.addTransition("q3", 'b', "q0");
+    f.addTransition("q3", 'b', "q6");
+    f.addTransition("q3", 'b', "q0");
+    f.addTransition("q4", 'a', "q1");
+    f.addTransition("q4", 'b', "q1");
+    f.addTransition("q4", 'b', "q3");
+    f.addTransition("q5", 'b', "q1");
+    f.addTransition("q5", 'b', "q3");
+    f.addTransition("q5", 'c', "q3");
+    f = f.determinize().back();
+
+    cout << f.toASCIITable();
+    cout << "Remoção de estados inalcancaveis:" << endl;
+    cout << f.removeUnreachableStates().toASCIITable();
+    cout << "Remoção de estados inalcancaveis+mortos:" << endl;
+    cout << f.removeUnreachableStates().removeDeadStates().toASCIITable();
+    cout << "Remoção de estados inalcancaveis+mortos+equivalentes:" << endl;
+    cout << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().toASCIITable();
+
+    // cout << f.toASCIITable();
+
+//    cout << f.nonDeterministic() << endl;
+//    list<FiniteAutomata> results = f.determinize();
+//    cout << results.size() << endl;
+//    cout << results.back().getStates() << endl;
+//    cout << results.back().nonDeterministic() << endl;
+//    for (string s: f.generates()) {
+//        cout << '"' << s << '"' << endl;
+//    }
+//    results.back().removeEquivalentStates();
     return 0;
 }
 #endif
