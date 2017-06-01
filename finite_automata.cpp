@@ -41,7 +41,7 @@ class FiniteAutomata {
             actual_states.push(state);
         }
 
-        bool operator!=(FiniteAutomataGenerator _)
+        bool operator!=(FiniteAutomataGenerator)
         {
             return !actual_states.empty() || !generated.empty();
         }
@@ -583,7 +583,7 @@ public:
         }
         result.append(tableWidth, '-');
         result.append("\n");
-        result.append("| &");
+        result.append("| 𝛿");
         result.append(largestState-2, ' ');
         for (char symbol: alphabet) {
             bool found = false;
