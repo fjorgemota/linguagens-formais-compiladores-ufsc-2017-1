@@ -1,13 +1,4 @@
-#include <set>
-#include <string>
-#include <map>
-#include <queue>
-#include <iostream>
-#include <list>
-#include <exception>
-#include <iterator>
-
-using namespace std;
+#include "all.h"
 
 const char EPSILON = '&';
 
@@ -35,10 +26,6 @@ class FiniteAutomataState {
     void Symbols(string symbols) {
         this->symbols = symbols;
     }
-    bool operator< (const FiniteAutomataState &right) const
-    {
-        return state < right.state && symbols < right.symbols;
-    }
     private:
     string state;
     string symbols;
@@ -51,12 +38,12 @@ class FiniteAutomata {
             FiniteAutomataState state;
             state.State(f.initial_state);
             state.Symbols("");
-            actual_states.insert(state);
+            actual_states.push(state);
         }
 
         bool operator!=(FiniteAutomataGenerator _)
         {
-            return !(generated.empty() && actual_states.empty());
+            return !actual_states.empty() || !generated.empty();
         }
 
         FiniteAutomataGenerator begin() const
@@ -91,8 +78,9 @@ class FiniteAutomata {
         private:
         void next() {
             while(generated.empty() && !actual_states.empty()) {
-                set<FiniteAutomataState> nextStates;
-                for (FiniteAutomataState actualState: actual_states) {
+                while (!actual_states.empty()) {
+                    FiniteAutomataState actualState = actual_states.front();
+                    actual_states.pop();
                     string state = actualState.State();
                     if (finite_automata.final_states.count(state)) {
                         generated.push(actualState.Symbols());
@@ -101,21 +89,23 @@ class FiniteAutomata {
                         continue;
                     }
                     for (char symbol: finite_automata.alphabet) {
-                         set<string> toStates = finite_automata.transitions.at(state)[symbol];
+                         set<string> toStates = finite_automata.transitions[state][symbol];
                          for (string toState: toStates) {
                              FiniteAutomataState nextState;
-                             nextState.Symbols(actualState.Symbols()+symbol);
+                             string nextString;
+                             nextString.append(actualState.Symbols());
+                             nextString.append(1, symbol);
+                             nextState.Symbols(nextString);
                              nextState.State(toState);
-                             nextStates.insert(nextState);
+                             actual_states.push(nextState);
                          }
                     }
-                };
-                actual_states = nextStates;
+                }
             }
         }
         FiniteAutomata &finite_automata;
         queue<string> generated;
-        set<FiniteAutomataState> actual_states;
+        queue<FiniteAutomataState> actual_states;
     };
 public:
     FiniteAutomata() {
@@ -206,7 +196,10 @@ public:
             result.addState(stateName, states == initialState, isFinal);
             map<char, set<string> > stateTransitions;
             stateTransitions = result.transitions[stateName];
-            for (char symbol: result.alphabet) {
+            for (const char &symbol: result.alphabet) {
+                if (symbol == EPSILON) {
+                    continue;
+                }
                 set<string> newTransitions;
                 for (string state: states) {
                     if (!result.transitions.count(state)) {
@@ -436,7 +429,121 @@ public:
         }
         return false;
     }
-
+    
+    bool isComplete() {
+        for (const string& state: states) {
+            if (!transitions.count(state)) {
+                return false;
+            }
+            for (const char& symbol: alphabet) {
+                if (!transitions[state].count(symbol)) {
+                    return false;
+                }    
+            }
+        }
+        return true;
+    }
+    FiniteAutomata complete() {
+        FiniteAutomata result(*this);
+        string errorState = findFreeName();
+        result.addState(errorState, false, true);
+        for (const char& symbol: alphabet) {
+            result.transitions[errorState][symbol].insert(errorState); 
+        }
+        for (const string& state: states) {
+            for (const char& symbol: alphabet) {
+                if (!transitions[state].count(symbol)) {
+                    transitions[state][symbol].insert(errorState);
+                }
+            }
+        }
+        return result;
+        
+    }
+    
+    FiniteAutomata doUnion(FiniteAutomata other) {
+        FiniteAutomata result;
+        map<string, string> statesMapping, otherStatesMapping;
+        string initialState = result.findFreeName();
+        result.addState(initialState, true, false);
+        for (const char &symbol: alphabet) {
+            if (symbol == EPSILON) {
+                continue;
+            }
+            result.addSymbol(symbol);
+        }
+        for (const string &state: states) {
+            string newName = result.findFreeName();
+            statesMapping[state] = newName;
+            result.addState(newName, false, false);
+        }
+        for (const char &symbol: other.alphabet) {
+            if (symbol == EPSILON) {
+                continue;
+            }
+            result.addSymbol(symbol);
+        }
+        for (const string &state: other.states) {
+            string newName = result.findFreeName();
+            otherStatesMapping[state] = newName;
+            result.addState(newName, false, false);
+        }
+        string finalState = result.findFreeName();
+        result.addState(finalState, false, true);
+        for (const string &state: states) {
+            for (const char &symbol: alphabet) {
+                set<string> transition = transitions[state][symbol];
+                for (const string &toState: transition) {
+                    result.addTransition(statesMapping[state], symbol, statesMapping[toState]);
+                }
+            }
+        }
+        for (const string &state: other.states) {
+            for (const char &symbol: other.alphabet) {
+                set<string> transition = other.transitions[state][symbol];
+                for (const string &toState: transition) {
+                    result.addTransition(otherStatesMapping[state], symbol, otherStatesMapping[toState]);
+                }
+            }
+        }
+        result.addTransition(initialState, EPSILON, statesMapping[initial_state]);
+        result.addTransition(initialState, EPSILON, otherStatesMapping[other.initial_state]);
+        for (const string &state: final_states) {
+            result.addTransition(statesMapping[state], EPSILON, finalState);
+        }
+        for (const string &state: other.final_states) {
+            result.addTransition(otherStatesMapping[state], EPSILON, finalState);
+        }
+        
+        return result;
+    }
+    
+    FiniteAutomata doIntersection(FiniteAutomata other) {
+        FiniteAutomata result, l1(*this), l2(other);
+        l1 = l1.doComplement();
+        l2 = l2.doComplement();
+        result = l1.doUnion(l2);
+        return result.doComplement();
+    }
+    
+    FiniteAutomata doComplement() {
+        FiniteAutomata result = complete();
+        set<string> newFinalStates;
+        for (const string &state: result.states) {
+            if (!result.final_states.count(state)) {
+                newFinalStates.insert(state);
+            }
+        }
+        result.final_states = newFinalStates;
+        return result;
+    }
+    
+    FiniteAutomata doDifference(FiniteAutomata other) {
+        FiniteAutomata l1(*this), l2(other);
+        l2 = l2.doComplement();
+        return l1.doUnion(l2);
+        
+    }
     string toASCIITable() {
         string result;
         map<char, int> columnWidth;
@@ -499,7 +606,7 @@ public:
         queue<string> q;
         q.push(initial_state);
         for (string state: states) {
-            if (final_states.count(state)) {
+            if (final_states.count(state) || state == initial_state) {
                 continue;
             }
             q.push(state);
@@ -609,7 +716,18 @@ private:
         }
         setStates(newStates, finalStates);
     }
-
+    
+    string findFreeName() {
+        int i = 0;
+        bool isFree = false;
+        string name;
+        do {
+            name = "q" + to_string(i);
+            isFree = !states.count(name);
+            i++;
+        } while (!isFree);
+        return name;
+    }
     set<string> states;
     set<char> alphabet;
     map<string, map<char, set<string> > > transitions;
@@ -620,6 +738,28 @@ private:
 #ifdef FINITE_AUTOMATA_TEST
 int main() {
     FiniteAutomata f, m;
+    f.addSymbol('a');
+    f.addSymbol('b');
+    f.addState("q0", true, false);
+    f.addState("q1", false, false);
+    f.addState("q2", false, true);
+    f.addTransition("q0", 'a', "q1");
+    f.addTransition("q1", 'b', "q2");
+    cout << "ab:" << endl << f.toASCIITable() << endl;
+    m.addSymbol('a');
+    m.addSymbol('b');
+    m.addState("q0", true, false);
+    m.addState("q1", false, false);
+    m.addState("q2", false, true);
+    m.addTransition("q0", 'b', "q1");
+    m.addTransition("q1", 'a', "q2");
+    cout << "ba:" << endl << m.toASCIITable() << endl;
+    cout << "(ab|ba):" << endl << f.doUnion(m).toASCIITable() << endl;
+    f = f.doUnion(m).determinize().back().removeUnreachableStates().removeDeadStates().removeEquivalentStates();
+    cout << "(ab|ba) minimizado:" << endl << f.toASCIITable() << endl;
+    for(string s: f.generates()) {
+        cout << '"' << s << '"' << endl;
+    }
 //    f.addState("[S]", true, false);
 //    f.addState("[AD]", false, false);
 //    f.addState("[E]", false, true);
@@ -679,13 +819,13 @@ int main() {
     f.addTransition("q5", 'c', "q3");
     f = f.determinize().back();
 
-    cout << f.toASCIITable();
-    cout << "Remoção de estados inalcancaveis:" << endl;
-    cout << f.removeUnreachableStates().toASCIITable();
-    cout << "Remoção de estados inalcancaveis+mortos:" << endl;
-    cout << f.removeUnreachableStates().removeDeadStates().toASCIITable();
-    cout << "Remoção de estados inalcancaveis+mortos+equivalentes:" << endl;
-    cout << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().toASCIITable();
+    // cout << f.toASCIITable();
+    // cout << "Remoção de estados inalcancaveis:" << endl;
+    // cout << f.removeUnreachableStates().toASCIITable();
+    // cout << "Remoção de estados inalcancaveis+mortos:" << endl;
+    // cout << f.removeUnreachableStates().removeDeadStates().toASCIITable();
+    // cout << "Remoção de estados inalcancaveis+mortos+equivalentes:" << endl;
+    // cout << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().toASCIITable();
 
     // cout << f.toASCIITable();
 
