@@ -27,6 +27,12 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     finite_automata.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    finite_automata.h
 
 FORMS    += mainwindow.ui
+
+CONFIG += precompile_header
+
+
+PRECOMPILED_HEADER = all.h
