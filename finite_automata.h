@@ -68,6 +68,7 @@ public:
     bool accepts(string s);
 
     bool isComplete();
+
     FiniteAutomata complete();
 
     FiniteAutomata doUnion(FiniteAutomata other);
