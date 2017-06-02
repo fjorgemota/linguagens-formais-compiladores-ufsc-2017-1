@@ -48,7 +48,7 @@ matrix:
     - os: osx
       osx_image: xcode8
       env:
-        - MATRIX_EVAL="brew install gcc && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-6 && CXX=g++-6"
+        - MATRIX_EVAL="brew install gcc && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-7 && CXX=g++-7"
 
      # works on Precise and Trusty
     - os: linux
