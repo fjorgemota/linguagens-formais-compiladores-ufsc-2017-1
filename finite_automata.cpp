@@ -24,6 +24,12 @@ void FiniteAutomataState::Symbols(string symbols) {
     this->symbols = symbols;
 }
 
+const int FiniteAutomata::INITIAL_STATE = 1 << 1;
+
+const int FiniteAutomata::FINAL_STATE = 1 << 0;
+
+const char FiniteAutomata::EPSILON = '&';
+
 FiniteAutomata::FiniteAutomataGenerator::FiniteAutomataGenerator(FiniteAutomata &f) : finite_automata(f), actual_states() {
     for (string state: f.getClosure(f.initial_state)) {
         FiniteAutomataState actualState;
@@ -141,15 +147,15 @@ void FiniteAutomata::addSymbol(char symbol) {
     alphabet.insert(symbol);
 }
 
-void FiniteAutomata::addState(string state, bool initialState, bool finalState) {
-    if (!initial_state.empty() && initialState) {
+void FiniteAutomata::addState(string state, int type) {
+    if (!initial_state.empty() && type & INITIAL_STATE) {
         throw FiniteAutomataException("Initial State already defined");
     }
     states.insert(state);
-    if (initialState) {
+    if (type & INITIAL_STATE) {
         initial_state = state;
     }
-    if (finalState) {
+    if (type & FINAL_STATE) {
         final_states.insert(state);
     }
 }
@@ -180,14 +186,17 @@ FiniteAutomata FiniteAutomata::determinize() {
         set<string> states = q.front();
         q.pop();
         string stateName = formatStates(states);
-        bool isFinal = false;
+        int type = 0;
+        if (states == initialState) {
+            type |= INITIAL_STATE;
+        }
         for (string state: states) {
             if (result.final_states.count(state)) {
-                isFinal = true;
+                type |= FINAL_STATE;
                 break;
             }
         }
-        result.addState(stateName, states == initialState, isFinal);
+        result.addState(stateName, type);
         map<char, set<string> > stateTransitions;
         stateTransitions = result.transitions[stateName];
         for (const char &symbol: result.alphabet) {
@@ -435,7 +444,7 @@ bool FiniteAutomata::isComplete() {
 FiniteAutomata FiniteAutomata::complete() {
     FiniteAutomata result(*this);
     string errorState = findFreeName();
-    result.addState(errorState, false, true);
+    result.addState(errorState);
     for (const char& symbol: alphabet) {
         if (symbol == EPSILON) {
             continue;
@@ -456,7 +465,7 @@ FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) {
     FiniteAutomata result;
     map<string, string> statesMapping, otherStatesMapping;
     string initialState = result.findFreeName();
-    result.addState(initialState, true, false);
+    result.addState(initialState, INITIAL_STATE);
     for (const char &symbol: alphabet) {
         if (symbol == EPSILON) {
             continue;
@@ -466,7 +475,7 @@ FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) {
     for (const string &state: states) {
         string newName = result.findFreeName();
         statesMapping[state] = newName;
-        result.addState(newName, false, false);
+        result.addState(newName);
     }
     for (const char &symbol: other.alphabet) {
         if (symbol == EPSILON) {
@@ -477,10 +486,10 @@ FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) {
     for (const string &state: other.states) {
         string newName = result.findFreeName();
         otherStatesMapping[state] = newName;
-        result.addState(newName, false, false);
+        result.addState(newName);
     }
     string finalState = result.findFreeName();
-    result.addState(finalState, false, true);
+    result.addState(finalState, FINAL_STATE);
     for (const string &state: states) {
         for (const char &symbol: alphabet) {
             set<string> transition = transitions[state][symbol];
@@ -730,11 +739,11 @@ int main() {
     f.addSymbol('a');
     f.addSymbol('b');
     f.addSymbol('c');
-    f.addState("q0", true, true);
-    f.addState("q1", false, false);
-    f.addState("q2", false, false);
-    f.addState("q3", false, false);
-    f.addState("q4", false, true);
+    f.addState("q0", FiniteAutomata::INITIAL_STATE | FiniteAutomata::FINAL_STATE);
+    f.addState("q1");
+    f.addState("q2");
+    f.addState("q3");
+    f.addState("q4", FiniteAutomata::FINAL_STATE);
     f.addTransition("q0", 'a', "q1");
     f.addTransition("q0", 'b', "q2");
     f.addTransition("q0", 'b', "q4");
@@ -786,12 +795,12 @@ int main() {
 //    for(string s: f.generates()) {
 //        cout << '"' << s << '"' << endl;
 //    }
-//    f.addState("[S]", true, false);
-//    f.addState("[AD]", false, false);
-//    f.addState("[E]", false, true);
-//    f.addState("[ABD]", false, false);
-//    f.addState("[CE]", false, true);
-//    f.addState("[ABE]", false, true);
+//    f.addState("[S]", FiniteAutomata::INITIAL_STATE);
+//    f.addState("[AD]");
+//    f.addState("[E]", FiniteAutomata::FINAL_STATE);
+//    f.addState("[ABD]");
+//    f.addState("[CE]", FiniteAutomata::FINAL_STATE);
+//    f.addState("[ABE]", FiniteAutomata::FINAL_STATE);
 //    f.addSymbol('0');
 //    f.addSymbol('1');
 //    f.addTransition("[S]", '0', "[AD]");
@@ -809,12 +818,12 @@ int main() {
 
 //    f = FiniteAutomata();
 
-//    f.addState("q0", true, true);
-//    f.addState("q1", false, false);
-//    f.addState("q3", false, false);
-//    f.addState("q4", false, false);
-//    f.addState("q5", false, false);
-//    f.addState("q6", false, true);
+//    f.addState("q0", FiniteAutomata::INITIAL_STATE | FiniteAutomata::FINAL_STATE);
+//    f.addState("q1");
+//    f.addState("q3");
+//    f.addState("q4");
+//    f.addState("q5");
+//    f.addState("q6", FiniteAutomata::FINAL_STATE);
 //    f.addSymbol('a');
 //    f.addSymbol('b');
 //    f.addSymbol('c');

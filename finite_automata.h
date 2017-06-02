@@ -3,7 +3,6 @@
 
 #include "all.h"
 
-const char EPSILON = '&';
 
 class FiniteAutomataException : public runtime_error {
 public:
@@ -54,7 +53,7 @@ public:
 
     void addSymbol(char symbol);
 
-    void addState(string state, bool initialState=false, bool finalState=false);
+    void addState(string state, int type = 0);
 
     void addTransition(string source, char symbol, string target);
 
@@ -83,6 +82,9 @@ public:
 
     FiniteAutomataGenerator generates();
 
+    const static int FINAL_STATE;
+    const static int INITIAL_STATE;
+    const static char EPSILON;
 private:
     set<string> getClosure(string state);
     string formatStates(set<string> states, bool brackets=true);
