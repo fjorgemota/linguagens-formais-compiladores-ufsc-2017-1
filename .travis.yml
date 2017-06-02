@@ -37,16 +37,25 @@ matrix:
     # Build on OS X Too
     - os: osx
       osx_image: xcode8
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && sudo xcode-select -s /Library/Developer/CommandLineTools && CXX=g++-4.9"
 
     - os: osx
       osx_image: xcode8
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
       env:
         - MATRIX_EVAL="brew install gcc5 && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-5 && CXX=g++-5"
 
     - os: osx
       osx_image: xcode8
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
       env:
         - MATRIX_EVAL="brew install gcc && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-7 && CXX=g++-7"
 
