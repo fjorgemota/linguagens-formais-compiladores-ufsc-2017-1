@@ -7,4 +7,9 @@
 #include <exception>
 #include <iterator>
 
+#ifndef FINITE_AUTOMATA_TEST
+#include <QMainWindow>
+#include <QApplication>
+#endif
+
 using namespace std;
