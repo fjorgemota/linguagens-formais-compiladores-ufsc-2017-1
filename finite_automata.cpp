@@ -218,7 +218,7 @@ FiniteAutomata FiniteAutomata::determinize() {
         }
         result.transitions[stateName] = stateTransitions;
     }
-    return result;
+    return result.removeUnreachableStates();
 }
 
 FiniteAutomata FiniteAutomata::removeUnreachableStates() {
@@ -437,12 +437,15 @@ FiniteAutomata FiniteAutomata::complete() {
     string errorState = findFreeName();
     result.addState(errorState, false, true);
     for (const char& symbol: alphabet) {
+        if (symbol == EPSILON) {
+            continue;
+        }
         result.transitions[errorState][symbol].insert(errorState);
     }
     for (const string& state: states) {
         for (const char& symbol: alphabet) {
-            if (!transitions[state].count(symbol)) {
-                transitions[state][symbol].insert(errorState);
+            if (transitions[state][symbol].empty() && symbol != EPSILON) {
+                result.transitions[state][symbol].insert(errorState);
             }
         }
     }
@@ -549,14 +552,17 @@ string FiniteAutomata::toASCIITable() {
         }
     }
     for (char symbol: alphabet) {
-        int largestTransition = 5;
+        int largestTransition = 3;
         bool found = false;
         for (string state: states) {
-            if (!transitions[state][symbol].empty()) {
+            int length = 2;
+            if (transitions[state][symbol].empty()) {
+                length++;
+            } else {
+                string transition = formatStates(transitions[state][symbol], false);
+                length += transition.length();
                 found = true;
             }
-            string transition = formatStates(transitions[state][symbol], false);
-            int length = transition.length()+3;
             if (length > largestTransition) {
                 largestTransition = length;
             }
@@ -565,7 +571,7 @@ string FiniteAutomata::toASCIITable() {
             columnWidth[symbol] = largestTransition;
         }
     }
-    int tableWidth = alphabet.size()+1+largestState;
+    int tableWidth = columnWidth.size()+2+largestState;
     for (auto column: columnWidth) {
         tableWidth += column.second;
     }
@@ -719,29 +725,67 @@ string FiniteAutomata::findFreeName() {
 
 #ifdef FINITE_AUTOMATA_TEST
 int main() {
-    FiniteAutomata f, m;
+
+    FiniteAutomata f;
     f.addSymbol('a');
     f.addSymbol('b');
-    f.addState("q0", true, false);
+    f.addSymbol('c');
+    f.addState("q0", true, true);
     f.addState("q1", false, false);
-    f.addState("q2", false, true);
+    f.addState("q2", false, false);
+    f.addState("q3", false, false);
+    f.addState("q4", false, true);
     f.addTransition("q0", 'a', "q1");
-    f.addTransition("q1", 'b', "q2");
-    cout << "ab:" << endl << f.toASCIITable() << endl;
-    m.addSymbol('a');
-    m.addSymbol('b');
-    m.addState("q0", true, false);
-    m.addState("q1", false, false);
-    m.addState("q2", false, true);
-    m.addTransition("q0", 'b', "q1");
-    m.addTransition("q1", 'a', "q2");
-    cout << "ba:" << endl << m.toASCIITable() << endl;
-    cout << "(ab|ba):" << endl << f.doUnion(m).toASCIITable() << endl;
-    f = f.doUnion(m).determinize().removeUnreachableStates().removeDeadStates().removeEquivalentStates();
-    cout << "(ab|ba) minimizado:" << endl << f.toASCIITable() << endl;
-    for(string s: f.generates()) {
-        cout << '"' << s << '"' << endl;
-    }
+    f.addTransition("q0", 'b', "q2");
+    f.addTransition("q0", 'b', "q4");
+    f.addTransition("q0", 'c', "q0");
+    f.addTransition("q0", 'c', "q4");
+
+    f.addTransition("q1", 'a', "q0");
+    f.addTransition("q1", 'a', "q4");
+    f.addTransition("q1", 'b', "q3");
+    f.addTransition("q1", 'c', "q1");
+
+
+    f.addTransition("q2", 'a', "q1");
+    f.addTransition("q2", 'c', "q0");
+    f.addTransition("q2", 'c', "q2");
+    f.addTransition("q2", 'c', "q4");
+
+
+    f.addTransition("q3", 'a', "q0");
+    f.addTransition("q3", 'a', "q4");
+
+    f.addTransition("q3", 'c', "q1");
+    f.addTransition("q3", 'c', "q3");
+
+    cout << "Antes: " << endl << f.toASCIITable() << endl;
+    cout << "Depois: " << endl << f.determinize().complete().toASCIITable() << endl;
+
+
+//    FiniteAutomata f, m;
+//    f.addSymbol('a');
+//    f.addSymbol('b');
+//    f.addState("q0", true, false);
+//    f.addState("q1", false, false);
+//    f.addState("q2", false, true);
+//    f.addTransition("q0", 'a', "q1");
+//    f.addTransition("q1", 'b', "q2");
+//    cout << "ab:" << endl << f.toASCIITable() << endl;
+//    m.addSymbol('a');
+//    m.addSymbol('b');
+//    m.addState("q0", true, false);
+//    m.addState("q1", false, false);
+//    m.addState("q2", false, true);
+//    m.addTransition("q0", 'b', "q1");
+//    m.addTransition("q1", 'a', "q2");
+//    cout << "ba:" << endl << m.toASCIITable() << endl;
+//    cout << "(ab|ba):" << endl << f.doUnion(m).toASCIITable() << endl;
+//    f = f.doUnion(m).determinize().removeUnreachableStates().removeDeadStates().removeEquivalentStates();
+//    cout << "(ab|ba) minimizado:" << endl << f.toASCIITable() << endl;
+//    for(string s: f.generates()) {
+//        cout << '"' << s << '"' << endl;
+//    }
 //    f.addState("[S]", true, false);
 //    f.addState("[AD]", false, false);
 //    f.addState("[E]", false, true);
@@ -763,43 +807,43 @@ int main() {
 //    f.addTransition("[ABE]", '0', "[ABE]");
 //    f.addTransition("[ABE]", '1', "[CE]");
 
-    f = FiniteAutomata();
+//    f = FiniteAutomata();
 
-    f.addState("q0", true, true);
-    f.addState("q1", false, false);
-    f.addState("q3", false, false);
-    f.addState("q4", false, false);
-    f.addState("q5", false, false);
-    f.addState("q6", false, true);
-    f.addSymbol('a');
-    f.addSymbol('b');
-    f.addSymbol('c');
+//    f.addState("q0", true, true);
+//    f.addState("q1", false, false);
+//    f.addState("q3", false, false);
+//    f.addState("q4", false, false);
+//    f.addState("q5", false, false);
+//    f.addState("q6", false, true);
+//    f.addSymbol('a');
+//    f.addSymbol('b');
+//    f.addSymbol('c');
 //    f.addTransition("q0", 'a', "q1");
 //    f.addTransition("q1", 'b', "q3");
 //    f.addTransition("q3", 'b', "q4");
 //    f.addTransition("q4", 'a', "q5");
 //    f.addTransition("q5", 'a', "q6");
 
-    f.addTransition("q0", 'a', "q1");
-    f.addTransition("q0", 'b', "q1");
-    f.addTransition("q0", 'b', "q3");
-    f.addTransition("q0", 'c', "q3");
-    f.addTransition("q1", 'b', "q0");
-    f.addTransition("q1", 'b', "q6");
-    f.addTransition("q1", 'c', "q4");
-    f.addTransition("q1", 'c', "q6");
-    f.addTransition("q3", 'a', "q5");
-    f.addTransition("q3", 'a', "q6");
-    f.addTransition("q3", 'b', "q0");
-    f.addTransition("q3", 'b', "q6");
-    f.addTransition("q3", 'b', "q0");
-    f.addTransition("q4", 'a', "q1");
-    f.addTransition("q4", 'b', "q1");
-    f.addTransition("q4", 'b', "q3");
-    f.addTransition("q5", 'b', "q1");
-    f.addTransition("q5", 'b', "q3");
-    f.addTransition("q5", 'c', "q3");
-    f = f.determinize();
+//    f.addTransition("q0", 'a', "q1");
+//    f.addTransition("q0", 'b', "q1");
+//    f.addTransition("q0", 'b', "q3");
+//    f.addTransition("q0", 'c', "q3");
+//    f.addTransition("q1", 'b', "q0");
+//    f.addTransition("q1", 'b', "q6");
+//    f.addTransition("q1", 'c', "q4");
+//    f.addTransition("q1", 'c', "q6");
+//    f.addTransition("q3", 'a', "q5");
+//    f.addTransition("q3", 'a', "q6");
+//    f.addTransition("q3", 'b', "q0");
+//    f.addTransition("q3", 'b', "q6");
+//    f.addTransition("q3", 'b', "q0");
+//    f.addTransition("q4", 'a', "q1");
+//    f.addTransition("q4", 'b', "q1");
+//    f.addTransition("q4", 'b', "q3");
+//    f.addTransition("q5", 'b', "q1");
+//    f.addTransition("q5", 'b', "q3");
+//    f.addTransition("q5", 'c', "q3");
+//    f = f.determinize();
 
     // cout << f.toASCIITable();
     // cout << "Remoção de estados inalcancaveis:" << endl;
