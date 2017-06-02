@@ -38,17 +38,17 @@ matrix:
     - os: osx
       osx_image: xcode8
       env:
-        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+        - MATRIX_EVAL="CC=gcc-4.9 && sudo xcode-select -s /Library/Developer/CommandLineTools && CXX=g++-4.9"
 
     - os: osx
       osx_image: xcode8
       env:
-        - MATRIX_EVAL="brew install gcc5 && CC=gcc-5 && CXX=g++-5"
+        - MATRIX_EVAL="brew install gcc5 && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-5 && CXX=g++-5"
 
     - os: osx
       osx_image: xcode8
       env:
-        - MATRIX_EVAL="brew install gcc && CC=gcc-6 && CXX=g++-6"
+        - MATRIX_EVAL="brew install gcc && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-6 && CXX=g++-6"
 
      # works on Precise and Trusty
     - os: linux
@@ -88,6 +88,7 @@ matrix:
 
     # works on Trusty
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
@@ -99,6 +100,7 @@ matrix:
 
     # works on Trusty
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
@@ -110,6 +112,7 @@ matrix:
 
     # works on Trusty
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
@@ -126,3 +129,5 @@ script:
     - $CXX -std=c++11 -o finite_automata finite_automata.cpp -Wall -DFINITE_AUTOMATA_TEST
     - ls
     - ./finite_automata
+notifications:
+  email: false
