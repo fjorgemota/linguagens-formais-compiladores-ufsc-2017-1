@@ -12,15 +12,18 @@ test: build-tests run-tests clean-tests
 debug-test: build-tests debug-tests clean-tests
 get-deps:
 	mkdir -p $(DEPS_PATH); \
-	if [ -d "$$GTEST_PATH" ]; then \
-		cd $$GTEST_PATH/googletest && cmake . && make && cd -; \
+	if [ -d "$(GTEST_PATH)" ]; then \
+		cd $(GTEST_PATH)/googletest && cmake . && make && cd -; \
 	else \
 		git clone --depth 1 -b release-1.8.0 https://github.com/google/googletest.git $(GTEST_PATH) && cd $(GTEST_PATH)/googletest && cmake . && make && cd -; \
 	fi;
 build-tests: get-deps
+	if [ -z "$(CXX)" ]; then\
+		CXX := "g++"; \
+	fi; \
 	for FILE in $(FILES); do\
 		TEST_FILE="`echo $$FILE | sed 's/_test//'`";\
-		g++ -o $(BUILD_DIR)/$$FILE $$FILE.cpp $(GTEST_PATH)/googletest/libgtest.a -I $(GTEST_PATH)/googletest/include/ -lpthread -g -Wall -I.. ../$$TEST_FILE.cpp -DEXCLUDE_QT -std=c++11; \
+		$(CXX) -o $(BUILD_DIR)/$$FILE $$FILE.cpp $(GTEST_PATH)/googletest/libgtest.a -I $(GTEST_PATH)/googletest/include/ -lpthread -g -Wall -I.. ../$$TEST_FILE.cpp -DEXCLUDE_QT -std=c++11; \
 	done;
 run-tests:
 	for TEST_EXEC in $(FILES); do\
@@ -46,4 +49,3 @@ interactive-debug-test:
 	fi;
 clean-tests:
 	rm -Rf $(BUILD_DIR)
-
