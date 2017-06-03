@@ -1,6 +1,7 @@
+#include "all.h"
 #include "node.h"
 
 class DotNode : Node {
-    void ascend();
-    void descend();
+    list<NodeAction> ascend();
+    list<NodeAction> descend();
 };

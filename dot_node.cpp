@@ -1,12 +1,15 @@
 #include "dot_node.h"
-#include <iostream>
 
-void DotNode::ascend() {
-    this->getRight();
+list<NodeAction> DotNode::ascend() {
+    list<NodeAction> neighbors;
+    neighbors.push_back(NodeAction(this->getRight, down));
+    return neighbors;
 }
 
-void DotNode::descend() {
-    this->getLeft();
+list<NodeAction> DotNode::descend() {
+    list<NodeAction> neighbors;
+    neighbors.push_back(NodeAction(this->getLeft, down));
+    return neighbors;
 }
 
 #ifndef DOT_NODE_TEST
