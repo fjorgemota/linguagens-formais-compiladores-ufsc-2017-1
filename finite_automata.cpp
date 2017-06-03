@@ -378,6 +378,7 @@ FiniteAutomata FiniteAutomata::removeEquivalentStates() {
     string newInitialState;
     map<set<string>, string> newNames;
     map<string, set<string>> statesToEquivalenceClasses;
+    result.transitions.clear();
     for (set<string> equivalenceClass: newEquivalenceClasses) {
         string stateName = "q"+to_string(i);
         bool isFinal = false;
@@ -409,9 +410,9 @@ FiniteAutomata FiniteAutomata::removeEquivalentStates() {
         for (string state: equivalenceClass) {
             for (char symbol: result.alphabet) {
                 string toState;
-                if (result.transitions[state].count(symbol) &&
-                        !result.transitions[state][symbol].empty()) {
-                    for (string to: result.transitions[state][symbol]) {
+                if (transitions[state].count(symbol) &&
+                        !transitions[state][symbol].empty()) {
+                    for (string to: transitions[state][symbol]) {
                         toState = to;
                         // Just get the first element and break the loop..
                         break;
@@ -764,35 +765,27 @@ int main() {
     FiniteAutomata f;
     f.addSymbol('a');
     f.addSymbol('b');
-    f.addSymbol('c');
-   f.addState("S", FiniteAutomata::INITIAL_STATE | FiniteAutomata::FINAL_STATE);
-   f.addState("A");
-   f.addState("B");
-   f.addState("C");
-   f.addState("F", FiniteAutomata::FINAL_STATE);
-   f.addTransition("S", 'a', "A");
-   f.addTransition("S", 'b', "B");
-   f.addTransition("S", 'b', "F");
-   f.addTransition("S", 'c', "S");
-   f.addTransition("S", 'c', "F");
+   f.addState("q0", FiniteAutomata::INITIAL_STATE);
+   f.addState("q1");
+   f.addState("q2");
+   f.addState("q3", FiniteAutomata::FINAL_STATE);
+   f.addState("q4", FiniteAutomata::FINAL_STATE);
+f.addTransition("q0", 'a', "q1");
+f.addTransition("q0", 'b', "q2");
+f.addTransition("q1", 'a', "q3");
 
-   f.addTransition("A", 'a', "S");
-   f.addTransition("A", 'a', "F");
-   f.addTransition("A", 'b', "C");
-   f.addTransition("A", 'c', "A");
+f.addTransition("q2", 'b', "q4");
 
-   f.addTransition("B", 'a', "A");
-   f.addTransition("B", 'c', "B");
-   f.addTransition("B", 'c', "S");
-   f.addTransition("B", 'c', "F");
+f.addTransition("q3", 'a', "q3");
+f.addTransition("q3", 'b', "q3");
 
-   f.addTransition("C", 'a', "S");
-   f.addTransition("C", 'a', "F");
-   f.addTransition("C", 'c', "A");
-   f.addTransition("C", 'c', "C");
-
-
-
+f.addTransition("q4", 'a', "q4");
+f.addTransition("q4", 'b', "q4");
+cout << "Antes: " << endl << f.toASCIITable() << endl;
+cout << "Estados Inalcancaveis: " << endl << f.removeUnreachableStates().toASCIITable() << endl;
+cout << "Estados Mortos: " << endl << f.removeUnreachableStates().removeDeadStates().toASCIITable() << endl;
+cout << "Estados Equivalentes: " << endl << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().toASCIITable() << endl;
+cout << "Completo: " << endl << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().complete().toASCIITable() << endl;
 
 //    f.addSymbol('a');
 //    f.addSymbol('b');
@@ -825,10 +818,6 @@ int main() {
 
 //    f.addTransition("q3", 'c', "q1");
 //    f.addTransition("q3", 'c', "q3");
-
-    cout << "Antes: " << endl << f.toASCIITable() << endl;
-    cout << "Determinizado: " << endl << f.determinize().toASCIITable() << endl;
-    cout << "Determinizado minimo: " << endl << f.determinize().removeUnreachableStates().removeDeadStates().removeEquivalentStates().toASCIITable() << endl;
 
 
 //    FiniteAutomata f, m;
