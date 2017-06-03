@@ -2,12 +2,12 @@
 
 list<NodeAction> QuestionMarkNode::ascend() {
     list<NodeAction> neighbors;
-    neighbors.push_back(NodeAction(this->getParent, up));
+    neighbors.push_back(NodeAction(this->getParent(), up));
     return neighbors;
 }
 
 list<NodeAction> QuestionMarkNode::descend() {
     list<NodeAction> neighbors;
-    neighbors.push_back(NodeAction(this->getLeft, down));
+    neighbors.push_back(NodeAction(this->getLeft(), down));
     return neighbors;
 }
