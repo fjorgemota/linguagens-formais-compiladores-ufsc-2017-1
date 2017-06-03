@@ -13,7 +13,7 @@ Direction NodeAction::getDirection() {
     return this->direction;
 }
 
-Node::Node(string v) {
+Node::Node(char v) {
     value = v;
     left = NULL;
     right = NULL;
@@ -32,7 +32,7 @@ Node* Node::getParent() {
     return this->parent;
 }
 
-string Node::getValue() {
+char Node::getValue() {
     return this->value;
 }
 

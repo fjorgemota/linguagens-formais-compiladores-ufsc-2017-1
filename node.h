@@ -1,3 +1,6 @@
+#ifndef NODE_H
+#define NODE_H
+
 #include "all.h"
 
 using namespace std;
@@ -21,11 +24,11 @@ class NodeAction {
 
 class Node {
   public:
-    Node(string v);
+    Node(char v);
     Node* getLeft();
     Node* getRight();
     Node* getParent();
-    string getValue();
+    char getValue();
     void setRight(Node* n);
     void setLeft(Node* n);
     void setParent(Node* n);
@@ -37,5 +40,7 @@ class Node {
     Node *left;
     Node *right;
     Node *parent;
-    string value;
+    char value;
 };
+
+#endif // NODE_H
