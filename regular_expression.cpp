@@ -29,6 +29,22 @@ class RegularExpression {
             }
             return subexpr;
         }
+        string normalize(string re) {
+            string::iterator it = re.begin();
+
+            char prev = *it;
+            string result;
+            result.append(1, prev);
+            for (++it; it != re.end(); ++it) {
+                char c = *it;
+                if (shouldConcatenate(prev, c)) {
+                    result.append(1, '.');
+                }
+                result.append(1, c);
+                prev = *it;
+            }
+            return result;
+        }
 
   private:
         int getOrder(char c) {
@@ -40,19 +56,33 @@ class RegularExpression {
             return 1;
         }
 
+        bool isMultiplier(char c) {
+            return c == '*' || c == '+' || c == '?';
+        }
+
+        bool isTerminal(char c) {
+            return !(c == '|' || isMultiplier(c) | c == ')' || c == '(');
+        }
+
+        bool shouldConcatenate(char prev, char c) {
+            bool pTerminal = isTerminal(prev);
+            bool cTerminal = isTerminal(c);
+            if (pTerminal && cTerminal) {
+                return true;
+            }
+            return isMultiplier(prev) && cTerminal ||
+                    isMultiplier(prev) && c == '(';
+        }
+
+
         string regex;
 };
 
 #ifndef REGULAR_EXPRESSION_TEST
 int main(int argc, char const *argv[]) {
     RegularExpression regex;
-    string re = "(a|bc)*(ab)*|ab";
-    int str = regex.getLessPriority(re);
-    string subsr1 = re.substr(0, str);
-    string subsr2 = re.substr(str+1);
-
-    cout << subsr1 << "\n";
-    cout << subsr2 << "\n";
+    string re = "(0?(10*1)*0)+";
+    cout << regex.normalize(re) << endl;
     return 0;
 }
 #endif
