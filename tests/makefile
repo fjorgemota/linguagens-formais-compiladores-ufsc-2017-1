@@ -4,7 +4,7 @@
 .PHONY: tests
 .PHONY: get-deps
 SHELL := /bin/bash
-BUILD_DIR := $(shell mktemp -d)
+BUILD_DIR := $(shell mktemp -d /tmp/tmp.XXXXXXXXX)
 FILES := `ls -1 | grep .cpp | sed 's/\.cpp//'`
 test: build-tests run-tests clean-tests
 debug-test: build-tests debug-tests clean-tests
