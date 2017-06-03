@@ -11,3 +11,7 @@ list<NodeAction> QuestionMarkNode::descend() {
     neighbors.push_back(NodeAction(this->getLeft(), down));
     return neighbors;
 }
+
+NodeType QuestionMarkNode::getType() {
+    return NodeType::QUESTION;
+}

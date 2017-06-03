@@ -9,3 +9,7 @@ list<NodeAction> LambdaNode::descend() {
     list<NodeAction> neighbors;
     return neighbors;
 }
+
+NodeType LambdaNode::getType() {
+    return NodeType::LAMBDA;
+}

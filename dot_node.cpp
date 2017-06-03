@@ -12,10 +12,6 @@ list<NodeAction> DotNode::descend() {
     return neighbors;
 }
 
-#ifndef DOT_NODE_TEST
-int main() {
-    DotNode *node = DotNode('.');
-
-    cout << node->getValue() << "\n";
+NodeType DotNode::getType() {
+    return NodeType::DOT;
 }
-#endif

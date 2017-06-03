@@ -12,3 +12,7 @@ list<NodeAction> PlusNode::descend() {
     neighbors.push_back(NodeAction(this->getLeft(), down));
     return neighbors;
 }
+
+NodeType PlusNode::getType() {
+    return NodeType::PLUS;
+}

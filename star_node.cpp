@@ -13,3 +13,7 @@ list<NodeAction> StarNode::descend() {
     neighbors.push_back(NodeAction(this->getParent(), up));
     return neighbors;
 }
+
+NodeType StarNode::getType() {
+    return NodeType::STAR;
+}

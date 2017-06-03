@@ -1,4 +1,4 @@
-#include "UnionNode.h"
+#include "union_node.h"
 
 list<NodeAction> UnionNode::ascend() {
     Node *last = this;
@@ -15,4 +15,8 @@ list<NodeAction> UnionNode::descend() {
     neighbors.push_back(NodeAction(this->getLeft(), down));
     neighbors.push_back(NodeAction(this->getRight(), down));
     return neighbors;
+}
+
+NodeType UnionNode::getType() {
+    return NodeType::UNION;
 }

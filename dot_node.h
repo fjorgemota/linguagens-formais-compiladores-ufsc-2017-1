@@ -3,4 +3,5 @@
 class DotNode : Node {
     list<NodeAction> ascend();
     list<NodeAction> descend();
+    NodeType getType();
 };

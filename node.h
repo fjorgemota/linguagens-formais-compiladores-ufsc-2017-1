@@ -3,6 +3,10 @@
 using namespace std;
 
 enum Direction {up, down};
+enum NodeType {DOT, LAMBDA, LEAF, PLUS, QUESTION, STAR, UNION};
+
+// There is a symbol called Node, just name it here..
+class Node;
 
 class NodeAction {
   public:
@@ -27,6 +31,7 @@ class Node {
     void setParent(Node* n);
     virtual list<NodeAction> descend() = 0;
     virtual list<NodeAction> ascend() = 0;
+    virtual NodeType getType() = 0;
 
   private:
     Node *left;

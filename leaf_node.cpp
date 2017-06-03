@@ -10,3 +10,7 @@ list<NodeAction> LeafNode::descend() {
     list<NodeAction> neighbors;
     return neighbors;
 }
+
+NodeType LeafNode::getType() {
+    return NodeType::LEAF;
+}
