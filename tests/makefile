@@ -6,19 +6,21 @@
 SHELL := /bin/bash
 BUILD_DIR := $(shell mktemp -d /tmp/tmp.XXXXXXXXX)
 FILES := `ls -1 | grep .cpp | sed 's/\.cpp//'`
+DEPS_PATH := deps
+GTEST_PATH := $(DEPS_PATH)/googletest
 test: build-tests run-tests clean-tests
 debug-test: build-tests debug-tests clean-tests
 get-deps:
-	if [ -d googletest ]; then \
-		cd googletest/googletest && cmake . && make && cd -; \
+	mkdir -p $(DEPS_PATH); \
+	if [ -d "$$GTEST_PATH" ]; then \
+		cd $$GTEST_PATH/googletest && cmake . && make && cd -; \
 	else \
-		git clone --depth 1 -b release-1.8.0 https://github.com/google/googletest.git googletest && cd googletest/googletest && cmake . && make && cd -; \
+		git clone --depth 1 -b release-1.8.0 https://github.com/google/googletest.git $(GTEST_PATH) && cd $(GTEST_PATH)/googletest && cmake . && make && cd -; \
 	fi;
 build-tests: get-deps
-	echo $$BUILD_DIR; \
 	for FILE in $(FILES); do\
 		TEST_FILE="`echo $$FILE | sed 's/_test//'`";\
-		g++ -o $(BUILD_DIR)/$$FILE $$FILE.cpp googletest/googletest/libgtest.a -I googletest/googletest/include/ -lpthread -g -Wall -I.. ../$$TEST_FILE.cpp -DEXCLUDE_QT -std=c++11; \
+		g++ -o $(BUILD_DIR)/$$FILE $$FILE.cpp $(GTEST_PATH)/googletest/libgtest.a -I $(GTEST_PATH)/googletest/include/ -lpthread -g -Wall -I.. ../$$TEST_FILE.cpp -DEXCLUDE_QT -std=c++11; \
 	done;
 run-tests:
 	for TEST_EXEC in $(FILES); do\

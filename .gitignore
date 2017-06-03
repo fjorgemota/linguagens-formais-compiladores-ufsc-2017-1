@@ -96,4 +96,4 @@ CMakeLists.txt.user*
 # End of https://www.gitignore.io/api/qt,c++,qtcreator
 
 
-tests/googletest
+tests/deps

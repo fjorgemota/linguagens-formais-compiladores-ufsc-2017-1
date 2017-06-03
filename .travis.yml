@@ -132,7 +132,7 @@ matrix:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 cache:
   directories:
-    - "tests/googletest"
+    - "tests/deps"
 before_install:
     - eval "${MATRIX_EVAL}"
 script:
