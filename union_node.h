@@ -1,8 +1,10 @@
 #include "node.h"
 
-class UnionNode : Node {
+class UnionNode : public Node {
   public:
-      list<NodeAction> ascend();
-      list<NodeAction> descend();
-      NodeType getType();
+    using Node::Node;
+
+    list<NodeAction> ascend();
+    list<NodeAction> descend();
+    NodeType getType();
 };
