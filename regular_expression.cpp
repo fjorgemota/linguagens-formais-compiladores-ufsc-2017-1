@@ -9,10 +9,11 @@ class RegularExpression {
   public:
         int getLessPriority(string re) {
             int pos = 0;
-            int less_priority = 5;
+            int less_priority = 3;
             int count_parentesis = 0;
             int subexpr;
-            for (char& c : re) {
+            string norm = normalize(re);
+            for (char& c : norm) {
                 if (c == '(') {
                     count_parentesis++;
                 }
@@ -52,8 +53,10 @@ class RegularExpression {
                 return 0;
             } else if (c == '*' || c == '+' || c == '?') {
                 return 2;
+            } else if (c == '.') {
+                return 1;
             }
-            return 1;
+            return 3;
         }
 
         bool isMultiplier(char c) {
@@ -81,8 +84,11 @@ class RegularExpression {
 #ifndef REGULAR_EXPRESSION_TEST
 int main(int argc, char const *argv[]) {
     RegularExpression regex;
-    string re = "(0?(10*1)*0)+";
+    string re = "(a|bc)*(ab)*ab";
     cout << regex.normalize(re) << endl;
+    int pos = regex.getLessPriority(re);
+    string c = regex.normalize(re).substr(pos);
+    cout << c << endl;
     return 0;
 }
 #endif
