@@ -6,8 +6,7 @@
 #include <list>
 #include <exception>
 #include <iterator>
-
-#ifndef FINITE_AUTOMATA_TEST
+#ifndef EXCLUDE_QT
 #include <QMainWindow>
 #include <QApplication>
 #endif
