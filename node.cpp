@@ -47,11 +47,3 @@ void Node::setLeft(Node *n) {
 void Node::setParent(Node *n) {
     this->parent = n;
 }
-
-void Node::connectLeft(Node *a, Node *b) {
-    a->setLeft(b);
-}
-
-void Node::connectRight(Node *a, Node *b) {
-    a->setRight(b);
-}

@@ -21,8 +21,6 @@ class Node {
     string getValue();
     void setRight(Node *n);
     void setLeft(Node *n);
-    void connectLeft(Node *a, Node *b);
-    void connectRight(Node *a, Node *b);
     virtual list<NodeAction> descend() = 0;
     virtual list<NodeAction> ascend() = 0;
 
