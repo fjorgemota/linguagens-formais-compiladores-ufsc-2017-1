@@ -1,6 +1,6 @@
 #include "node.h"
 
-NodeAction::NodeAction(Node* n, enum d) {
+NodeAction::NodeAction(Node* n, Direction d) {
     this->direction = d;
     this->node = n;
 }
@@ -9,7 +9,7 @@ Node* NodeAction::getNode() {
     return this->node;
 }
 
-enum NodeAction::getDirection() {
+Direction NodeAction::getDirection() {
     return this->direction;
 }
 

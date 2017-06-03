@@ -2,15 +2,17 @@
 
 using namespace std;
 
+enum Direction {up, down};
+
 class NodeAction {
   public:
-    NodeAction(Node* n, enum d);
+    NodeAction(Node* n, Direction d);
     Node *getNode();
-    enum getDirection();
+    Direction getDirection();
 
   private:
     Node* node;
-    enum direction {up, down};
+    Direction direction;
 };
 
 class Node {
