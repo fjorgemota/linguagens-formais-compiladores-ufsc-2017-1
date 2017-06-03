@@ -1,4 +1,3 @@
-#include "all.h"
 #include "Node.h"
 
 class StarNode : Node {

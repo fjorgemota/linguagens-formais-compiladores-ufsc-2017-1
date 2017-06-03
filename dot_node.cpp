@@ -2,13 +2,13 @@
 
 list<NodeAction> DotNode::ascend() {
     list<NodeAction> neighbors;
-    neighbors.push_back(NodeAction(this->getRight, down));
+    neighbors.push_back(NodeAction(this->getRight(), down));
     return neighbors;
 }
 
 list<NodeAction> DotNode::descend() {
     list<NodeAction> neighbors;
-    neighbors.push_back(NodeAction(this->getLeft, down));
+    neighbors.push_back(NodeAction(this->getLeft(), down));
     return neighbors;
 }
 

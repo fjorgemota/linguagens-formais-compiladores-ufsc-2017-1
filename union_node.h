@@ -1,4 +1,3 @@
-#include "all.h"
 #include "node.h"
 
 class UnionNode : Node {
