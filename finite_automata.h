@@ -55,6 +55,18 @@ public:
 
     void addState(string state, int type = 0);
 
+    bool hasState(string state);
+
+    bool hasSymbol(char symbol);
+
+    bool isFinalState(string state);
+
+    bool isInitialState(string state);
+
+    bool isSymbol(char symbol);
+
+    bool hasTransition(string source, char symbol, string target);
+
     void addTransition(string source, char symbol, string target);
 
     FiniteAutomata determinize();

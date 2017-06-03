@@ -160,6 +160,31 @@ void FiniteAutomata::addState(string state, int type) {
     }
 }
 
+bool FiniteAutomata::hasState(string state) {
+    return states.count(state);
+}
+
+bool FiniteAutomata::isInitialState(string state) {
+    return initial_state == state;
+}
+
+bool FiniteAutomata::isFinalState(string state) {
+    return final_states.count(state);
+}
+
+bool FiniteAutomata::hasSymbol(char symbol) {
+    return alphabet.count(symbol);
+}
+
+
+bool FiniteAutomata::hasTransition(string source, char symbol, string target) {
+    if (!hasState(source) || !hasState(target) || !hasSymbol(symbol)) {
+        return false;
+    }
+    return transitions[source].count(symbol) &&
+            transitions[source][symbol].count(target);
+}
+
 void FiniteAutomata::addTransition(string source, char symbol, string target) {
     if (states.count(source) == 0) {
         throw FiniteAutomataException("Source State is not a valid state");
