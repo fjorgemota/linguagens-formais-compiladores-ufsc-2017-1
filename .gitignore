@@ -94,3 +94,6 @@ CMakeLists.txt.user*
 # Qt Creator backups
 
 # End of https://www.gitignore.io/api/qt,c++,qtcreator
+
+
+tests/googletest

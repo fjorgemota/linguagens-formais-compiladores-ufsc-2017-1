@@ -130,13 +130,12 @@ matrix:
             - clang-5.0
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
-
+cache:
+  directories:
+    - "tests/googletest"
 before_install:
     - eval "${MATRIX_EVAL}"
-
 script:
-    - $CXX -std=c++11 -o finite_automata finite_automata.cpp -Wall -DFINITE_AUTOMATA_TEST -DEXCLUDE_QT
-    - ls
-    - ./finite_automata
+    - cd tests && make test
 notifications:
   email: false
