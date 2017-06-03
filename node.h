@@ -16,11 +16,13 @@ class NodeAction {
 class Node {
   public:
     Node(string v);
-    Node *getLeft();
-    Node *getRight();
+    Node* getLeft();
+    Node* getRight();
+    Node* getParent();
     string getValue();
-    void setRight(Node *n);
-    void setLeft(Node *n);
+    void setRight(Node* n);
+    void setLeft(Node* n);
+    void setParent(Node* n);
     virtual list<NodeAction> descend() = 0;
     virtual list<NodeAction> ascend() = 0;
 
