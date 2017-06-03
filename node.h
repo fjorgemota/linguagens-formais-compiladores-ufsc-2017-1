@@ -1,6 +1,17 @@
-#include <string>
+#include "all.h"
 
 using namespace std;
+
+class NodeAction {
+  public:
+    NodeAction(Node* n, enum d);
+    Node *getNode();
+    enum getDirection();
+
+  private:
+    Node* node;
+    enum direction {up, down};
+};
 
 class Node {
   public:
@@ -12,11 +23,12 @@ class Node {
     void setLeft(Node *n);
     void connectLeft(Node *a, Node *b);
     void connectRight(Node *a, Node *b);
-    virtual void descend() = 0;
-    virtual void ascend() = 0;
+    virtual list<NodeAction> descend() = 0;
+    virtual list<NodeAction> ascend() = 0;
 
   private:
     Node *left;
     Node *right;
+    Node *parent;
     string value;
 };
