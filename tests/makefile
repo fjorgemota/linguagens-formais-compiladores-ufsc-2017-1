@@ -31,7 +31,7 @@ run-tests:
 		EXIT_CODE="$$?";\
 		if [ "$$EXIT_CODE" == "0" ]; then \
 		    TEST_FILE="`echo $$TEST_EXEC | sed 's/_test//'`"; \
-		    $(COV) -r $$TEST_FILE.cpp; \
+		    $(COV) $$TEST_FILE.cpp; \
 		    lcov --capture --directory . --output-file ../coverage/lcov.info;\
 		else \
 		    exit "$$EXIT_CODE"; \
