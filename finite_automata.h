@@ -49,7 +49,7 @@ public:
 
     FiniteAutomata(const FiniteAutomata &f);
 
-    bool isDeterministic();
+    bool isDeterministic() const;
 
     void addSymbol(char symbol);
 
@@ -71,27 +71,27 @@ public:
 
     void addTransition(string source, char symbol, string target);
 
-    FiniteAutomata determinize();
+    FiniteAutomata determinize() const;
 
-    FiniteAutomata removeUnreachableStates();
+    FiniteAutomata removeUnreachableStates() const;
 
-    FiniteAutomata removeDeadStates();
+    FiniteAutomata removeDeadStates() const;
 
-    FiniteAutomata removeEquivalentStates();
+    FiniteAutomata removeEquivalentStates() const;
 
     bool accepts(string s);
 
-    bool isComplete();
+    bool isComplete() const;
 
-    FiniteAutomata complete();
+    FiniteAutomata complete() const;
 
-    FiniteAutomata doUnion(FiniteAutomata other);
+    FiniteAutomata doUnion(FiniteAutomata other) const;
 
-    FiniteAutomata doIntersection(FiniteAutomata other);
+    FiniteAutomata doIntersection(FiniteAutomata other) const;
 
-    FiniteAutomata doComplement();
+    FiniteAutomata doComplement() const;
 
-    FiniteAutomata doDifference(FiniteAutomata other);
+    FiniteAutomata doDifference(FiniteAutomata other) const;
 
     string toASCIITable();
 
@@ -101,14 +101,14 @@ public:
     const static int INITIAL_STATE;
     const static char EPSILON;
 private:
-    set<string> getClosure(string state);
-    string formatStates(set<string> states, bool brackets=true);
+    set<string> getClosure(string state) const;
+    string formatStates(set<string> states, bool brackets=true) const;
 
     void setStates(set<string> newStates, set<string> finalStates);
 
     void setStates(set<string> newStates);
 
-    string findFreeName();
+    string findFreeName() const;
 
     set<string> states;
     set<char> alphabet;

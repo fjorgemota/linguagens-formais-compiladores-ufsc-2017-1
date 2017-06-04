@@ -119,19 +119,30 @@ FiniteAutomata::FiniteAutomata(const FiniteAutomata &f) {
     final_states = f.final_states;
 }
 
-bool FiniteAutomata::isDeterministic() {
+bool FiniteAutomata::isDeterministic() const {
     for (string state: states) {
-        map<char, set<string> > stateTransitions = transitions[state];
+        map<char, set<string> > stateTransitions;
+        try {
+            stateTransitions = transitions.at(state);
+        } catch (out_of_range) {
+            continue;
+        }
         set<string> closure = getClosure(state);
         int closureSize = closure.size()-1;
         if (closureSize > 1) {
             return false;
         }
         for (char symbol: alphabet) {
-            if (!stateTransitions.count(symbol) || symbol == EPSILON) {
+            if (symbol == EPSILON) {
                 continue;
             }
-            int exits = stateTransitions[symbol].size()+closureSize;
+            set<string> transition;
+            try {
+                transition = stateTransitions.at(symbol);
+            } catch (out_of_range) {
+                continue;
+            }
+            int exits = transition.size()+closureSize;
             if (exits > 1) {
                 return false;
             }
@@ -221,7 +232,7 @@ void FiniteAutomata::addTransition(string source, char symbol, string target) {
     transitions[source][symbol].insert(target);
 }
 
-FiniteAutomata FiniteAutomata::determinize() {
+FiniteAutomata FiniteAutomata::determinize() const {
     if (initial_state.empty()) {
         throw FiniteAutomataException("Initial State should be defined to determinize automata");
     }
@@ -278,7 +289,7 @@ FiniteAutomata FiniteAutomata::determinize() {
     return result.removeUnreachableStates();
 }
 
-FiniteAutomata FiniteAutomata::removeUnreachableStates() {
+FiniteAutomata FiniteAutomata::removeUnreachableStates() const {
     if (initial_state.empty()) {
         throw FiniteAutomataException("Initial State should be defined to remove unreachable states");
     }
@@ -310,7 +321,7 @@ FiniteAutomata FiniteAutomata::removeUnreachableStates() {
     return result;
 }
 
-FiniteAutomata FiniteAutomata::removeDeadStates() {
+FiniteAutomata FiniteAutomata::removeDeadStates() const {
     FiniteAutomata result(*this);
     set<string> newStates;
     queue<string> q;
@@ -342,7 +353,7 @@ FiniteAutomata FiniteAutomata::removeDeadStates() {
     return result;
 }
 
-FiniteAutomata FiniteAutomata::removeEquivalentStates() {
+FiniteAutomata FiniteAutomata::removeEquivalentStates() const {
     if (!isDeterministic()) {
         throw FiniteAutomataException("This method works only on deterministic finite automata");
     }
@@ -437,9 +448,14 @@ FiniteAutomata FiniteAutomata::removeEquivalentStates() {
         for (string state: equivalenceClass) {
             for (char symbol: result.alphabet) {
                 string toState;
-                if (transitions[state].count(symbol) &&
-                        !transitions[state][symbol].empty()) {
-                    for (string to: transitions[state][symbol]) {
+                set<string> transition;
+                try {
+                    transition = transitions.at(state).at(symbol);
+                } catch (out_of_range e) {
+                    // Well, transition will be empty already..
+                }
+                if (!transition.empty()) {
+                    for (string to: transition) {
                         toState = to;
                         // Just get the first element and break the loop..
                         break;
@@ -484,21 +500,24 @@ bool FiniteAutomata::accepts(string s) {
     return false;
 }
 
-bool FiniteAutomata::isComplete() {
-    for (const string& state: states) {
-        if (!transitions.count(state)) {
-            return false;
-        }
-        for (const char& symbol: alphabet) {
-            if (!transitions[state].count(symbol)) {
-                return false;
+bool FiniteAutomata::isComplete() const {
+    try {
+        for (const string& state: states) {
+            map<char, set<string> > transition;
+            transition = transitions.at(state);
+            for (const char& symbol: alphabet) {
+                if (transition.at(symbol).empty()) {
+                    return false;
+                }
             }
         }
+    } catch (out_of_range) {
+        return false;
     }
     return true;
 }
 
-FiniteAutomata FiniteAutomata::complete() {
+FiniteAutomata FiniteAutomata::complete() const {
     FiniteAutomata result(*this);
     string errorState = findFreeName();
     result.addState(errorState);
@@ -510,7 +529,13 @@ FiniteAutomata FiniteAutomata::complete() {
     }
     for (const string& state: states) {
         for (const char& symbol: alphabet) {
-            if (transitions[state][symbol].empty() && symbol != EPSILON) {
+            bool isEmpty;
+            try {
+                isEmpty = transitions.at(state).at(symbol).empty();
+            } catch (out_of_range e) {
+                isEmpty = false;
+            }
+            if (isEmpty && symbol != EPSILON) {
                 result.transitions[state][symbol].insert(errorState);
             }
         }
@@ -518,7 +543,7 @@ FiniteAutomata FiniteAutomata::complete() {
     return result;
 }
 
-FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) {
+FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) const {
     FiniteAutomata result;
     map<string, string> statesMapping, otherStatesMapping;
     string initialState = result.findFreeName();
@@ -549,7 +574,12 @@ FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) {
     result.addState(finalState, FINAL_STATE);
     for (const string &state: states) {
         for (const char &symbol: alphabet) {
-            set<string> transition = transitions[state][symbol];
+            set<string> transition;
+            try {
+                transition = transitions.at(state).at(symbol);
+            } catch (out_of_range e) {
+                continue;
+            }
             for (const string &toState: transition) {
                 result.addTransition(statesMapping[state], symbol, statesMapping[toState]);
             }
@@ -574,7 +604,7 @@ FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) {
     return result;
 }
 
-FiniteAutomata FiniteAutomata::doIntersection(FiniteAutomata other) {
+FiniteAutomata FiniteAutomata::doIntersection(FiniteAutomata other) const {
     FiniteAutomata result, l1(*this), l2(other);
     l1 = l1.doComplement();
     l2 = l2.doComplement();
@@ -582,7 +612,7 @@ FiniteAutomata FiniteAutomata::doIntersection(FiniteAutomata other) {
     return result.doComplement();
 }
 
-FiniteAutomata FiniteAutomata::doComplement() {
+FiniteAutomata FiniteAutomata::doComplement() const {
     FiniteAutomata result = complete();
     set<string> newFinalStates;
     for (const string &state: result.states) {
@@ -594,7 +624,7 @@ FiniteAutomata FiniteAutomata::doComplement() {
     return result;
 }
 
-FiniteAutomata FiniteAutomata::doDifference(FiniteAutomata other) {
+FiniteAutomata FiniteAutomata::doDifference(FiniteAutomata other) const {
     FiniteAutomata l1(*this), l2(other);
     l2 = l2.doComplement();
     return l1.doUnion(l2);
@@ -716,7 +746,7 @@ FiniteAutomata::FiniteAutomataGenerator FiniteAutomata::generates() {
     return FiniteAutomataGenerator(*this);
 }
 
-set<string> FiniteAutomata::getClosure(string state) {
+set<string> FiniteAutomata::getClosure(string state) const {
     set<string> results = set<string>();
     queue<string> q;
     q.push(state);
@@ -727,16 +757,20 @@ set<string> FiniteAutomata::getClosure(string state) {
             continue;
         }
         results.insert(s);
-        if (transitions[s].count(EPSILON)) {
-            for (string state: transitions[s][EPSILON]) {
-                q.push(state);
-            }
+        set<string> transition;
+        try {
+            transition = transitions.at(s).at(EPSILON);
+        } catch (out_of_range) {
+            continue;
+        }
+        for (string state: transition) {
+            q.push(state);
         }
     }
     return results;
 }
 
-string FiniteAutomata::formatStates(set<string> states, bool brackets) {
+string FiniteAutomata::formatStates(set<string> states, bool brackets) const {
     string s;
     if (brackets) {
         s = "[";
@@ -777,7 +811,7 @@ void FiniteAutomata::setStates(set<string> newStates) {
     setStates(newStates, finalStates);
 }
 
-string FiniteAutomata::findFreeName() {
+string FiniteAutomata::findFreeName() const {
     int i = 0;
     bool isFree = false;
     string name;
