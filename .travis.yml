@@ -9,8 +9,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-4.9
+            - lcov
       env:
-         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9 && COV=gcov-4.9"
 
     # works on Precise and Trusty
     - os: linux
@@ -20,8 +21,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-5
+            - lcov
       env:
-         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && COV=gcov-5"
 
     # works on Precise and Trusty
     - os: linux
@@ -31,8 +33,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-6
+            - lcov
       env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && COV=gcov-6"
 
     # Build on OS X Too
     - os: osx
@@ -41,7 +44,7 @@ matrix:
         directories:
           - $HOME/Library/Caches/Homebrew
       env:
-        - MATRIX_EVAL="CC=gcc-4.9 && sudo xcode-select -s /Library/Developer/CommandLineTools && CXX=g++-4.9"
+        - MATRIX_EVAL="CC=gcc-4.9 && && CXX=g++-4.9 && COV=gcov-4.9 && sudo xcode-select -s /Library/Developer/CommandLineTools && brew install lcov"
 
     - os: osx
       osx_image: xcode8
@@ -49,7 +52,7 @@ matrix:
         directories:
           - $HOME/Library/Caches/Homebrew
       env:
-        - MATRIX_EVAL="brew install gcc5 && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-5 && CXX=g++-5"
+        - MATRIX_EVAL="brew install gcc5 lcov && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-5 && CXX=g++-5 && COV=gcov-4.9"
 
     - os: osx
       osx_image: xcode8
@@ -57,7 +60,7 @@ matrix:
         directories:
           - $HOME/Library/Caches/Homebrew
       env:
-        - MATRIX_EVAL="brew install gcc && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-7 && CXX=g++-7"
+        - MATRIX_EVAL="brew install gcc lcov && sudo xcode-select -s /Library/Developer/CommandLineTools && CC=gcc-7 && CXX=g++-7 && COV=gcov-4.9"
 
      # works on Precise and Trusty
     - os: linux
@@ -68,8 +71,9 @@ matrix:
             - llvm-toolchain-precise-3.6
           packages:
             - clang-3.6
+            - lcov
       env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6 && COV=llvm-cov-3.6"
 
     # works on Precise and Trusty
     - os: linux
@@ -80,8 +84,9 @@ matrix:
             - llvm-toolchain-precise-3.7
           packages:
             - clang-3.7
+            - lcov
       env:
-        - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
+        - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7 && COV=llvm-cov-3.7"
 
     # works on Precise and Trusty
     - os: linux
@@ -92,8 +97,9 @@ matrix:
             - llvm-toolchain-precise-3.8
           packages:
             - clang-3.8
+            - lcov
       env:
-        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8 && COV=llvm-cov-3.8"
 
     # works on Trusty
     - os: linux
@@ -104,8 +110,9 @@ matrix:
             - llvm-toolchain-trusty-3.9
           packages:
             - clang-3.9
+            - lcov
       env:
-        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9 && COV=llvm-cov-3.9"
 
     # works on Trusty
     - os: linux
@@ -116,8 +123,9 @@ matrix:
             - llvm-toolchain-trusty-4.0
           packages:
             - clang-4.0
+            - lcov
       env:
-        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && COV=llvm-cov-4.0"
 
     # works on Trusty
     - os: linux
@@ -128,8 +136,9 @@ matrix:
             - llvm-toolchain-trusty
           packages:
             - clang-5.0
+            - lcov
       env:
-        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && COV=llvm-cov-5.0"
 cache:
   directories:
     - "tests/deps"
