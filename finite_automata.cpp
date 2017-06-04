@@ -473,12 +473,16 @@ bool FiniteAutomata::accepts(string s) {
         throw FiniteAutomataException("Initial State should be defined to check if string is accepted");
     }
     set <string> actualStates;
-    actualStates.insert(initial_state);
+    set<string> initialState = getClosure(initial_state);
+    actualStates.insert(initialState.begin(), initialState.end());
     for (char symbol: s) {
         set <string> nextStates;
         for (string state: actualStates) {
-            set<string> tr = transitions[state][symbol];
-            nextStates.insert(tr.begin(), tr.end());
+            set<string> toStates = transitions[state][symbol];
+            for (string toState: toStates) {
+                set<string> transition = getClosure(toState);
+                nextStates.insert(transition.begin(), transition.end());
+            }
         }
         actualStates = nextStates;
     }
