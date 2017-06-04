@@ -49,7 +49,7 @@ public:
 
     FiniteAutomata(const FiniteAutomata &f);
 
-    bool nonDeterministic();
+    bool isDeterministic();
 
     void addSymbol(char symbol);
 
@@ -66,6 +66,8 @@ public:
     bool isSymbol(char symbol);
 
     bool hasTransition(string source, char symbol, string target);
+
+    set<string> getTransitions(string source, char symbol);
 
     void addTransition(string source, char symbol, string target);
 

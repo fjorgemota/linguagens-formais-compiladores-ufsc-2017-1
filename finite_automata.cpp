@@ -119,13 +119,13 @@ FiniteAutomata::FiniteAutomata(const FiniteAutomata &f) {
     final_states = f.final_states;
 }
 
-bool FiniteAutomata::nonDeterministic() {
+bool FiniteAutomata::isDeterministic() {
     for (string state: states) {
         map<char, set<string> > stateTransitions = transitions[state];
         set<string> closure = getClosure(state);
         int closureSize = closure.size()-1;
         if (closureSize > 1) {
-            return true;
+            return false;
         }
         for (char symbol: alphabet) {
             if (!stateTransitions.count(symbol) || symbol == EPSILON) {
@@ -133,11 +133,11 @@ bool FiniteAutomata::nonDeterministic() {
             }
             int exits = stateTransitions[symbol].size()+closureSize;
             if (exits > 1) {
-                return true;
+                return false;
             }
         }
     }
-    return false;
+    return true;
 }
 
 void FiniteAutomata::addSymbol(char symbol) {
@@ -148,6 +148,19 @@ void FiniteAutomata::addSymbol(char symbol) {
 }
 
 void FiniteAutomata::addState(string state, int type) {
+    if ((state.length() > 1 && state[0] == '-' && state[1] == '>') ||
+        (state.length() > 2 && state[1] == '-' && state[2] == '>')) {
+        type |= INITIAL_STATE;
+        if (state[1] == '-' && state[2] == '>') {
+            state.erase(1,2);
+        } else {
+            state.erase(0, 2);
+        }
+    }
+    if (state.length() > 1 && state[0] == '*') {
+        type |= FINAL_STATE;
+        state.erase(0, 1);
+    }
     if (!initial_state.empty() && type & INITIAL_STATE) {
         throw FiniteAutomataException("Initial State already defined");
     }
@@ -183,6 +196,16 @@ bool FiniteAutomata::hasTransition(string source, char symbol, string target) {
     }
     return transitions[source].count(symbol) &&
             transitions[source][symbol].count(target);
+}
+
+set<string> FiniteAutomata::getTransitions(string source, char symbol) {
+    set<string> result;
+    if (!hasState(source) || !hasSymbol(symbol)) {
+        return result;
+    }
+    set<string> transition = transitions[source][symbol];
+    result.insert(transition.begin(), transition.end());
+    return result;
 }
 
 void FiniteAutomata::addTransition(string source, char symbol, string target) {
@@ -233,8 +256,8 @@ FiniteAutomata FiniteAutomata::determinize() {
                 if (!result.transitions.count(state)) {
                     continue;
                 }
-                set<string> tr = result.transitions[state][symbol];
-                newTransitions.insert(tr.begin(), tr.end());
+                set<string> transition = result.transitions[state][symbol];
+                newTransitions.insert(transition.begin(), transition.end());
             }
             for (string new_transition: newTransitions) {
                 set<string> closures = getClosure(new_transition);
@@ -256,6 +279,9 @@ FiniteAutomata FiniteAutomata::determinize() {
 }
 
 FiniteAutomata FiniteAutomata::removeUnreachableStates() {
+    if (initial_state.empty()) {
+        throw FiniteAutomataException("Initial State should be defined to remove unreachable states");
+    }
     FiniteAutomata result(*this);
     set<string> newStates;
     queue<string> q;
@@ -317,7 +343,7 @@ FiniteAutomata FiniteAutomata::removeDeadStates() {
 }
 
 FiniteAutomata FiniteAutomata::removeEquivalentStates() {
-    if (nonDeterministic()) {
+    if (!isDeterministic()) {
         throw FiniteAutomataException("This method works only on deterministic finite automata");
     }
     FiniteAutomata result(*this);
@@ -381,6 +407,7 @@ FiniteAutomata FiniteAutomata::removeEquivalentStates() {
     result.transitions.clear();
     for (set<string> equivalenceClass: newEquivalenceClasses) {
         string stateName = "q"+to_string(i);
+        stateName = formatStates(equivalenceClass, true);
         bool isFinal = false;
         for (string state: equivalenceClass) {
             if (result.final_states.count(state)) {
@@ -395,7 +422,7 @@ FiniteAutomata FiniteAutomata::removeEquivalentStates() {
             continue;
         }
         if (equivalenceClass.count(result.initial_state)) {
-            stateName = "q0"; // First state is always "q0"
+            // stateName = "q0"; // First state is always "q0"
             newInitialState = stateName;
         }
         if (isFinal) {
@@ -436,6 +463,9 @@ FiniteAutomata FiniteAutomata::removeEquivalentStates() {
 }
 
 bool FiniteAutomata::accepts(string s) {
+    if (initial_state.empty()) {
+        throw FiniteAutomataException("Initial State should be defined to check if string is accepted");
+    }
     set <string> actualStates;
     actualStates.insert(initial_state);
     for (char symbol: s) {
@@ -761,166 +791,30 @@ string FiniteAutomata::findFreeName() {
 
 #ifdef FINITE_AUTOMATA_TEST
 int main() {
-
     FiniteAutomata f;
     f.addSymbol('a');
     f.addSymbol('b');
-   f.addState("q0", FiniteAutomata::INITIAL_STATE);
-   f.addState("q1");
-   f.addState("q2");
-   f.addState("q3", FiniteAutomata::FINAL_STATE);
-   f.addState("q4", FiniteAutomata::FINAL_STATE);
-f.addTransition("q0", 'a', "q1");
-f.addTransition("q0", 'b', "q2");
-f.addTransition("q1", 'a', "q3");
+    f.addState("->q0");
+    f.addState("q1");
+    f.addState("q2");
+    f.addState("*q3");
+    f.addState("*q4");
+    f.addTransition("q0", 'a', "q1");
+    f.addTransition("q0", 'b', "q2");
+    f.addTransition("q1", 'a', "q3");
 
-f.addTransition("q2", 'b', "q4");
+    f.addTransition("q2", 'b', "q4");
 
-f.addTransition("q3", 'a', "q3");
-f.addTransition("q3", 'b', "q3");
+    f.addTransition("q3", 'a', "q3");
+    f.addTransition("q3", 'b', "q3");
 
-f.addTransition("q4", 'a', "q4");
-f.addTransition("q4", 'b', "q4");
-cout << "Antes: " << endl << f.toASCIITable() << endl;
-cout << "Estados Inalcancaveis: " << endl << f.removeUnreachableStates().toASCIITable() << endl;
-cout << "Estados Mortos: " << endl << f.removeUnreachableStates().removeDeadStates().toASCIITable() << endl;
-cout << "Estados Equivalentes: " << endl << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().toASCIITable() << endl;
-cout << "Completo: " << endl << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().complete().toASCIITable() << endl;
-
-//    f.addSymbol('a');
-//    f.addSymbol('b');
-//    f.addSymbol('c');
-//    f.addState("q0", FiniteAutomata::INITIAL_STATE | FiniteAutomata::FINAL_STATE);
-//    f.addState("q1");
-//    f.addState("q2");
-//    f.addState("q3");
-//    f.addState("q4", FiniteAutomata::FINAL_STATE);
-//    f.addTransition("q0", 'a', "q1");
-//    f.addTransition("q0", 'b', "q2");
-//    f.addTransition("q0", 'b', "q4");
-//    f.addTransition("q0", 'c', "q0");
-//    f.addTransition("q0", 'c', "q4");
-
-//    f.addTransition("q1", 'a', "q0");
-//    f.addTransition("q1", 'a', "q4");
-//    f.addTransition("q1", 'b', "q3");
-//    f.addTransition("q1", 'c', "q1");
-
-
-//    f.addTransition("q2", 'a', "q1");
-//    f.addTransition("q2", 'c', "q0");
-//    f.addTransition("q2", 'c', "q2");
-//    f.addTransition("q2", 'c', "q4");
-
-
-//    f.addTransition("q3", 'a', "q0");
-//    f.addTransition("q3", 'a', "q4");
-
-//    f.addTransition("q3", 'c', "q1");
-//    f.addTransition("q3", 'c', "q3");
-
-
-//    FiniteAutomata f, m;
-//    f.addSymbol('a');
-//    f.addSymbol('b');
-//    f.addState("q0", true, false);
-//    f.addState("q1", false, false);
-//    f.addState("q2", false, true);
-//    f.addTransition("q0", 'a', "q1");
-//    f.addTransition("q1", 'b', "q2");
-//    cout << "ab:" << endl << f.toASCIITable() << endl;
-//    m.addSymbol('a');
-//    m.addSymbol('b');
-//    m.addState("q0", true, false);
-//    m.addState("q1", false, false);
-//    m.addState("q2", false, true);
-//    m.addTransition("q0", 'b', "q1");
-//    m.addTransition("q1", 'a', "q2");
-//    cout << "ba:" << endl << m.toASCIITable() << endl;
-//    cout << "(ab|ba):" << endl << f.doUnion(m).toASCIITable() << endl;
-//    f = f.doUnion(m).determinize().removeUnreachableStates().removeDeadStates().removeEquivalentStates();
-//    cout << "(ab|ba) minimizado:" << endl << f.toASCIITable() << endl;
-//    for(string s: f.generates()) {
-//        cout << '"' << s << '"' << endl;
-//    }
-//    f.addState("[S]", FiniteAutomata::INITIAL_STATE);
-//    f.addState("[AD]");
-//    f.addState("[E]", FiniteAutomata::FINAL_STATE);
-//    f.addState("[ABD]");
-//    f.addState("[CE]", FiniteAutomata::FINAL_STATE);
-//    f.addState("[ABE]", FiniteAutomata::FINAL_STATE);
-//    f.addSymbol('0');
-//    f.addSymbol('1');
-//    f.addTransition("[S]", '0', "[AD]");
-//    f.addTransition("[S]", '1', "[E]");
-//    f.addTransition("[AD]", '0', "[ABD]");
-//    f.addTransition("[AD]", '1', "[E]");
-//    f.addTransition("[E]", '0', "[E]");
-//    f.addTransition("[E]", '1', "[E]");
-//    f.addTransition("[ABD]", '0', "[ABD]");
-//    f.addTransition("[ABD]", '1', "[CE]");
-//    f.addTransition("[CE]", '0', "[ABE]");
-//    f.addTransition("[CE]", '1', "[E]");
-//    f.addTransition("[ABE]", '0', "[ABE]");
-//    f.addTransition("[ABE]", '1', "[CE]");
-
-//    f = FiniteAutomata();
-
-//    f.addState("q0", FiniteAutomata::INITIAL_STATE | FiniteAutomata::FINAL_STATE);
-//    f.addState("q1");
-//    f.addState("q3");
-//    f.addState("q4");
-//    f.addState("q5");
-//    f.addState("q6", FiniteAutomata::FINAL_STATE);
-//    f.addSymbol('a');
-//    f.addSymbol('b');
-//    f.addSymbol('c');
-//    f.addTransition("q0", 'a', "q1");
-//    f.addTransition("q1", 'b', "q3");
-//    f.addTransition("q3", 'b', "q4");
-//    f.addTransition("q4", 'a', "q5");
-//    f.addTransition("q5", 'a', "q6");
-
-//    f.addTransition("q0", 'a', "q1");
-//    f.addTransition("q0", 'b', "q1");
-//    f.addTransition("q0", 'b', "q3");
-//    f.addTransition("q0", 'c', "q3");
-//    f.addTransition("q1", 'b', "q0");
-//    f.addTransition("q1", 'b', "q6");
-//    f.addTransition("q1", 'c', "q4");
-//    f.addTransition("q1", 'c', "q6");
-//    f.addTransition("q3", 'a', "q5");
-//    f.addTransition("q3", 'a', "q6");
-//    f.addTransition("q3", 'b', "q0");
-//    f.addTransition("q3", 'b', "q6");
-//    f.addTransition("q3", 'b', "q0");
-//    f.addTransition("q4", 'a', "q1");
-//    f.addTransition("q4", 'b', "q1");
-//    f.addTransition("q4", 'b', "q3");
-//    f.addTransition("q5", 'b', "q1");
-//    f.addTransition("q5", 'b', "q3");
-//    f.addTransition("q5", 'c', "q3");
-//    f = f.determinize();
-
-    // cout << f.toASCIITable();
-    // cout << "Remoção de estados inalcancaveis:" << endl;
-    // cout << f.removeUnreachableStates().toASCIITable();
-    // cout << "Remoção de estados inalcancaveis+mortos:" << endl;
-    // cout << f.removeUnreachableStates().removeDeadStates().toASCIITable();
-    // cout << "Remoção de estados inalcancaveis+mortos+equivalentes:" << endl;
-    // cout << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().toASCIITable();
-
-    // cout << f.toASCIITable();
-
-//    cout << f.nonDeterministic() << endl;
-//    list<FiniteAutomata> results = f.determinize();
-//    cout << results.size() << endl;
-//    cout << results.back().getStates() << endl;
-//    cout << results.back().nonDeterministic() << endl;
-//    for (string s: f.generates()) {
-//        cout << '"' << s << '"' << endl;
-//    }
-//    results.back().removeEquivalentStates();
+    f.addTransition("q4", 'a', "q4");
+    f.addTransition("q4", 'b', "q4");
+    cout << "Antes: " << endl << f.toASCIITable() << endl;
+    cout << "Estados Inalcancaveis: " << endl << f.removeUnreachableStates().toASCIITable() << endl;
+    cout << "Estados Mortos: " << endl << f.removeUnreachableStates().removeDeadStates().toASCIITable() << endl;
+    cout << "Estados Equivalentes: " << endl << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().toASCIITable() << endl;
+    cout << "Completo: " << endl << f.removeUnreachableStates().removeDeadStates().removeEquivalentStates().complete().toASCIITable() << endl;
     return 0;
 }
 #endif
