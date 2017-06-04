@@ -145,6 +145,9 @@ cache:
 before_install:
     - eval "${MATRIX_EVAL}"
 script:
+    - export COV
+    - export CC
+    - export CXX
     - cd tests && make test
 notifications:
   email: false
