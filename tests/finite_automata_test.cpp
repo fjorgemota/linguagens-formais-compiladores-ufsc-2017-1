@@ -318,3 +318,68 @@ TEST_F(FiniteAutomataTest, removeEquivalentStatesNonDeterministic) {
     ASSERT_FALSE(f.isDeterministic());
     ASSERT_THROW(f.removeEquivalentStates(), FiniteAutomataException);
 }
+
+
+TEST_F(FiniteAutomataTest, acceptsNonDeterministic) {
+    f.addSymbol('a');
+    f.addSymbol('b');
+    f.addState("->q0");
+    f.addState("*q1");
+    f.addState("q2");
+    f.addTransition("q0", 'a', "q1");
+    f.addTransition("q0", 'a', "q2");
+    f.addTransition("q2", 'a', "q2");
+    ASSERT_FALSE(f.isDeterministic());
+    ASSERT_TRUE(f.accepts("a"));
+    ASSERT_FALSE(f.accepts("b"));
+}
+
+
+TEST_F(FiniteAutomataTest, acceptsDeterministic) {
+    f.addSymbol('a');
+    f.addSymbol('b');
+    f.addState("->q0");
+    f.addState("*q1");
+    f.addState("q2");
+    f.addTransition("q0", 'a', "q1");
+    f.addTransition("q0", 'a', "q2");
+    f.addTransition("q2", 'a', "q2");
+    f = f.determinize();
+    ASSERT_TRUE(f.isDeterministic());
+    ASSERT_TRUE(f.accepts("a"));
+    ASSERT_FALSE(f.accepts("b"));
+}
+
+TEST_F(FiniteAutomataTest, acceptsEpsilon) {
+    f.addSymbol('a');
+    f.addSymbol('b');
+    f.addState("->q0");
+    f.addState("*q1");
+    f.addState("q2");
+    f.addTransition("q0", 'a', "q2");
+    f.addTransition("q2", FiniteAutomata::EPSILON, "q1");
+    ASSERT_TRUE(f.isDeterministic());
+    ASSERT_TRUE(f.accepts("a"));
+    ASSERT_FALSE(f.accepts("b"));
+}
+
+TEST_F(FiniteAutomataTest, acceptsInvalidSymbol) {
+    f.addSymbol('a');
+    f.addState("->q0");
+    f.addState("*q1");
+    f.addState("q2");
+    f.addTransition("q0", 'a', "q2");
+    f.addTransition("q2", FiniteAutomata::EPSILON, "q1");
+    ASSERT_TRUE(f.isDeterministic());
+    ASSERT_FALSE(f.accepts("c"));
+}
+
+TEST_F(FiniteAutomataTest, acceptsWithoutInitialState) {
+    f.addSymbol('a');
+    f.addState("q0");
+    f.addState("*q1");
+    f.addState("q2");
+    f.addTransition("q0", 'a', "q2");
+    f.addTransition("q2", FiniteAutomata::EPSILON, "q1");
+    ASSERT_THROW(f.accepts("c"), FiniteAutomataException);
+}

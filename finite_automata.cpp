@@ -476,6 +476,9 @@ bool FiniteAutomata::accepts(string s) {
     set<string> initialState = getClosure(initial_state);
     actualStates.insert(initialState.begin(), initialState.end());
     for (char symbol: s) {
+        if (!alphabet.count(symbol)) {
+            return false;
+        }
         set <string> nextStates;
         for (string state: actualStates) {
             set<string> toStates = transitions[state][symbol];
