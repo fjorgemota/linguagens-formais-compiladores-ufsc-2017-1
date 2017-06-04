@@ -97,3 +97,4 @@ CMakeLists.txt.user*
 
 
 tests/deps
+coverage/
