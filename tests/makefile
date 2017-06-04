@@ -10,6 +10,7 @@ DEPS_PATH := deps
 COV ?= gcov
 CXX ?= g++
 GTEST_PATH := $(DEPS_PATH)/googletest
+LCOV_PATH := $(shell which lcov)
 test: build-tests run-tests clean-tests
 debug-test: build-tests debug-tests clean-tests
 get-deps:
@@ -32,8 +33,8 @@ run-tests:
 		if [ "$$EXIT_CODE" == "0" ]; then \
 		    TEST_FILE="`echo $$TEST_EXEC | sed 's/_test//'`"; \
 		    $(COV) $$TEST_FILE.cpp; \
-			if [ -n $(which lcov) ]; then\
-			    lcov --capture --directory . --output-file ../coverage/lcov.info;\
+			if [ -n "$(LCOV_PATH)" ]; then\
+			    $(LCOV_PATH) --capture --directory . --output-file ../coverage/lcov.info;\
 			fi;\
 		else \
 		    exit "$$EXIT_CODE"; \
