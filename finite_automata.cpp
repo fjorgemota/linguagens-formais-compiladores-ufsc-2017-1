@@ -499,7 +499,7 @@ bool FiniteAutomata::accepts(string s) {
 
 bool FiniteAutomata::isComplete() const {
     for (const string& state: states) {
-        if (!transitions.count(state) || transitions.at(state).size() < alphabet.size()) {
+        if (!transitions.count(state) || transitions.at(state).size() < (alphabet.size()-1)) {
             return false;
         }
     }

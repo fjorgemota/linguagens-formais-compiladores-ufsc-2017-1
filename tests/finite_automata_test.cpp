@@ -383,3 +383,14 @@ TEST_F(FiniteAutomataTest, acceptsWithoutInitialState) {
     f.addTransition("q2", FiniteAutomata::EPSILON, "q1");
     ASSERT_THROW(f.accepts("c"), FiniteAutomataException);
 }
+TEST_F(FiniteAutomataTest, isComplete) {
+    f.addSymbol('a');
+    f.addState("->q0");
+    f.addState("*q1");
+    f.addTransition("q0", 'a', "q1");
+    ASSERT_FALSE(f.isComplete());
+    f.addTransition("q1", 'a', "q1");
+    ASSERT_TRUE(f.isComplete());
+    f.addSymbol('b');
+    ASSERT_FALSE(f.isComplete());
+}
