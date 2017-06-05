@@ -18,8 +18,8 @@ class NodeAction {
     Direction getDirection();
 
   private:
-    Node* node;
     Direction direction;
+    Node *node;
 };
 
 class Node {
@@ -43,4 +43,65 @@ class Node {
     char value;
 };
 
-#endif // NODE_H
+
+class DotNode : public Node {
+  public:
+    using Node::Node;
+
+    list<NodeAction> ascend();
+    list<NodeAction> descend();
+    NodeType getType();
+};
+
+class LambdaNode : Node {
+  public:
+      list<NodeAction> ascend();
+      list<NodeAction> descend();
+      NodeType getType();
+};
+
+class LeafNode : public Node {
+  public:
+    using Node::Node;
+
+    list<NodeAction> ascend();
+    list<NodeAction> descend();
+    NodeType getType();
+};
+
+class PlusNode : public Node {
+  public:
+    using Node::Node;
+
+    list<NodeAction> ascend();
+    list<NodeAction> descend();
+    NodeType getType();
+};
+
+class QuestionMarkNode : public Node {
+  public:
+    using Node::Node;
+
+    list<NodeAction> ascend();
+    list<NodeAction> descend();
+    NodeType getType();
+};
+
+class StarNode : public Node {
+  public:
+    using Node::Node;
+
+    list<NodeAction> ascend();
+    list<NodeAction> descend();
+    NodeType getType();
+};
+
+class UnionNode : public Node {
+  public:
+    using Node::Node;
+
+    list<NodeAction> ascend();
+    list<NodeAction> descend();
+    NodeType getType();
+};
+#endif

@@ -1,11 +1,5 @@
 #include "all.h"
-#include "question_mark_node.h"
-#include "star_node.h"
-#include "dot_node.h"
-#include "plus_node.h"
-#include "union_node.h"
-#include "leaf_node.h"
-#include "lambda_node.h"
+#include "node.h"
 
 using namespace std;
 
