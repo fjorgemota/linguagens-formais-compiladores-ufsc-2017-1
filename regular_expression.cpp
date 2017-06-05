@@ -70,7 +70,7 @@ bool RegularExpression::shouldConcatenate(char prev, char c) {
         return true;
     }
     return (isMultiplier(prev) && cTerminal) ||
-            (isMultiplier(prev) && c == '(');
+            ((isMultiplier(prev) || pTerminal) && c == '(');
 }
 
 Node* RegularExpression::getNode(char c) {
@@ -121,7 +121,7 @@ Node* RegularExpression::getTree(string re) {
     int less_prior_position = getLessPriority(re);
 
     int size = re.size();
-    while (less_prior_position == -1 && !(re.empty())) {
+    while (less_prior_position == -1 && !(re.empty()) && re[0] == '(' && re[size-1] == ')') {
         re = re.substr(1, size-2);
         size = re.size();
         less_prior_position = getLessPriority(re);
@@ -136,13 +136,138 @@ Node* RegularExpression::getTree(string re) {
     char op = re.at(less_prior_position);
     Node* root = getNode(op);
 
-    string subre_left = re.substr(0, less_prior_position-1);
+    string subre_left = re.substr(0, less_prior_position);
     string subre_right = re.substr(less_prior_position+1);
     Node* left_child = getTree(subre_left);
     Node* right_child = getTree(subre_right);
-
+    if (left_child && !left_child->getRight()) {
+        left_child->setParent(root);
+    }
+    if (left_child && !right_child) {
+        Node *right = left_child->getRight();
+        while (right) {
+            if (!right->getRight()) {
+                right->setParent(root);
+            }
+            right = right->getRight();
+        }
+    }
     root->setLeft(left_child);
     root->setRight(right_child);
 
     return root;
+}
+
+
+string printTree(Node *root) {
+    string result;
+    queue<Node*> nodes;
+    nodes.push(root);
+    map<Node*, string> names;
+    int i = 0;
+    result.append("digraph {\n\tgraph [ranksep=\"equally\",nodesep=\"0.5\"];\n");
+    while (!nodes.empty()) {
+        Node *n = nodes.front();
+        nodes.pop();
+        if (n->getLeft()) {
+            nodes.push(n->getLeft());
+        }
+        if (n->getRight()) {
+            nodes.push(n->getRight());
+        }
+        string name = "n"+to_string(i);
+        result.append("\t\"");
+        result.append(name);
+        result.append("\" [label=\"");
+        result.append(1, n->getValue());
+        result.append("\",shape=\"circle\"];\n");
+        names[n] = name;
+        i++;
+    }
+    nodes.push(root);
+    i = 0;
+    while (!nodes.empty()) {
+        Node *n = nodes.front();
+        nodes.pop();
+        string rank = "\t{rank=\"same\" \"";
+        if (n->getLeft()) {
+            nodes.push(n->getLeft());
+            result.append("\t\"");
+            result.append(names[n]);
+            result.append("\" -> \"");
+            result.append(names[n->getLeft()]);
+            result.append("\";\n");
+            rank.append(names[n->getLeft()]);
+            rank.append("\" -> \"");
+        } else if (n->getRight()) {
+            string name = "null"+to_string(i);
+            result.append("\t\"");
+            result.append(name);
+            result.append("\" [style=\"invis\",shape=\"circle\"],label=\"0\";\n");
+            result.append("\t\"");
+            result.append(names[n]);
+            result.append("\" -> \"");
+            result.append(name);
+            result.append("\" [style=\"invis\"];\n");
+            rank.append(name);
+            rank.append("\" -> \"");
+            i++;
+        }
+        if (n->getLeft() || n->getRight()) {
+            string name = "null"+to_string(i);
+            result.append("\t\"");
+            result.append(name);
+            result.append("\" [style=\"invis\",shape=\"circle\",label=\"0\"];\n");
+            result.append("\t\"");
+            result.append(names[n]);
+            result.append("\" -> \"");
+            result.append(name);
+            result.append("\" [style=\"invis\"];\n");
+            rank.append(name);
+            rank.append("\" -> \"");
+            i++;
+        }
+        if (n->getRight()) {
+            nodes.push(n->getRight());
+            result.append("\t\"");
+            result.append(names[n]);
+            result.append("\" -> \"");
+            result.append(names[n->getRight()]);
+            result.append("\";\n");
+
+            rank.append(names[n->getRight()]);
+            rank.append("\" ");
+        } else if (n->getLeft()) {
+            string name = "null"+to_string(i);
+            result.append("\t\"");
+            result.append(name);
+            result.append("\" [style=\"invis\",shape=\"circle\",label=\"0\"];\n");
+            result.append("\t\"");
+            result.append(names[n]);
+            result.append("\" -> \"");
+            result.append(name);
+            result.append("\" [style=\"invis\"];\n");
+            rank.append(name);
+            rank.append("\" ");
+            i++;
+        }
+        rank.append(" [style=\"invis\"]}\n");
+        if (n->getLeft() || n->getRight()) {
+            result.append(rank);
+        }
+        if (n->getParent()) {
+            result.append("\t\"");
+            result.append(names[n]);
+            result.append("\" -> \"");
+            result.append(names[n->getParent()]);
+            result.append("\" [style=dotted];\n");
+        }
+    }
+    result.append("\toverlap=false;\n}\n");
+    return result;
+}
+int main() {
+    RegularExpression re("(0|1(01*0)*1)*");
+    cout << printTree(re.getTree()) << endl;
+    return 0;
 }
