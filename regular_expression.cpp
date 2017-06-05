@@ -8,9 +8,8 @@ int RegularExpression::getLessPriority(string re) {
     int pos = 0;
     int less_priority = 3;
     int count_parentesis = 0;
-    int subexpr;
-    string norm = normalize(re);
-    for (char& c : norm) {
+    int subexpr = -1;
+    for (char& c : re) {
         if (c == '(') {
             count_parentesis++;
         }
@@ -28,13 +27,13 @@ int RegularExpression::getLessPriority(string re) {
     return subexpr;
 }
 
-string RegularExpression::normalize(string re) {
-    string::iterator it = re.begin();
+string RegularExpression::normalize() {
+    string::iterator it = regex.begin();
 
     char prev = *it;
     string result;
     result.append(1, prev);
-    for (++it; it != re.end(); ++it) {
+    for (++it; it != regex.end(); ++it) {
         char c = *it;
         if (shouldConcatenate(prev, c)) {
             result.append(1, '.');
@@ -85,14 +84,65 @@ Node* RegularExpression::getNode(char c) {
     }
 }
 
-#ifndef REGULAR_EXPRESSION_TEST
-int main(int argc, char const *argv[]) {
-    RegularExpression regex;
-    string re = "(a|bc)*(ab)*ab";
-    cout << regex.normalize(re) << endl;
-    int pos = regex.getLessPriority(re);
-    char c = regex.normalize(re).at(pos);
-    cout << c << endl;
-    return 0;
+map<int, string> RegularExpression::getSubExpressions(string s) {
+    map<int, string> result;
+    int numParenthesis;
+    string subExpr;
+    int i = 0;
+    for (const char &c: s) {
+        if (c == '(') {
+            if (numParenthesis == 0) {
+                subExpr = string();
+            }
+            numParenthesis++;
+            i++;
+            continue;
+        }
+        if (numParenthesis > 0 && !(numParenthesis == 1 && c == ')')) {
+            subExpr.append(1, c);
+        }
+        if (c == ')') {
+            numParenthesis--;
+            if (numParenthesis == 0) {
+                result[i] = subExpr;
+                result[i-subExpr.size()-1] = subExpr;
+            }
+        }
+        i++;
+    }
+    return result;
 }
-#endif
+
+Node* RegularExpression::getTree() {
+    return getTree(normalize());
+}
+
+Node* RegularExpression::getTree(string re) {
+    int less_prior_position = getLessPriority(re);
+
+    int size = re.size();
+    while (less_prior_position == -1 && !(re.empty())) {
+        re = re.substr(1, size-2);
+        size = re.size();
+        less_prior_position = getLessPriority(re);
+    }
+
+    if (re.empty()) {
+        return NULL;
+    } else if (!(re.empty()) && less_prior_position == -1) {
+        return new LeafNode(re[0]);
+    }
+
+    char op = re.at(less_prior_position);
+    Node* root = getNode(op);
+
+    string subre_left = re.substr(0, less_prior_position-1);
+    string subre_right = re.substr(less_prior_position+1);
+    Node* left_child = getTree(subre_left);
+    Node* right_child = getTree(subre_right);
+
+    root->setLeft(left_child);
+    root->setRight(right_child);
+
+    return root;
+}

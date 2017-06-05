@@ -13,11 +13,13 @@ class RegularExpression {
   public:
     RegularExpression(string re);
     int getLessPriority(string re);
-    string normalize(string re);
+    string normalize();
     Node* getTree();
 
   private:
+    map<int, string> getSubExpressions(string s);
     Node* getNode(char c);
+    Node* getTree(string re);
     int getOrder(char c);
     bool isMultiplier(char c);
     bool isTerminal(char c);
