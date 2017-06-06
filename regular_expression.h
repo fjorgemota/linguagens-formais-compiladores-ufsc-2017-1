@@ -12,8 +12,8 @@ class RegularExpression {
 
   private:
     map<int, string> getSubExpressions(string s);
-    Node* getNode(char c);
-    Node* getTree(string re);
+    Node* getNode(char c, Node *root);
+    Node* getTree(string re, Node *root);
     int getOrder(char c);
     bool isMultiplier(char c);
     bool isTerminal(char c);

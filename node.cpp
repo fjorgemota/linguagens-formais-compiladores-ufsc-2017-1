@@ -13,12 +13,7 @@ Direction NodeAction::getDirection() {
     return this->direction;
 }
 
-Node::Node(char v) {
-    value = v;
-    left = NULL;
-    right = NULL;
-    parent = NULL;
-}
+Node::Node(char v, Node *root) : value(v), root(root), left(0), right(0) {}
 
 Node* Node::getLeft() {
     return this->left;
@@ -29,7 +24,23 @@ Node* Node::getRight() {
 }
 
 Node* Node::getParent() {
-    return this->parent;
+    if (root && root->left == this && !right) {
+        return root;
+    }
+    if (getType() != DOT && getType() != UNION) {
+        Node *parent = root;
+        Node *child = this;
+        while (parent && parent->right == child) {
+            child = parent;
+            if (!parent->root) {
+                return parent;
+                break;
+            }
+            parent = parent->root;
+        }
+        return parent;
+    }
+    return 0;
 }
 
 char Node::getValue() {
@@ -42,10 +53,6 @@ void Node::setRight(Node *n) {
 
 void Node::setLeft(Node *n) {
     this->left = n;
-}
-
-void Node::setParent(Node *n) {
-    this->parent = n;
 }
 
 list<NodeAction> DotNode::ascend() {

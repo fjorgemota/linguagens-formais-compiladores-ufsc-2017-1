@@ -73,14 +73,14 @@ bool RegularExpression::shouldConcatenate(char prev, char c) {
             ((isMultiplier(prev) || pTerminal) && c == '(');
 }
 
-Node* RegularExpression::getNode(char c) {
+Node* RegularExpression::getNode(char c, Node *root) {
     switch(c) {
-        case '.': return new DotNode(c);
-        case '|': return new UnionNode(c);
-        case '?': return new QuestionMarkNode(c);
-        case '*': return new StarNode(c);
-        case '+': return new PlusNode(c);
-        default: return new LeafNode(c);
+        case '.': return new DotNode(c, root);
+        case '|': return new UnionNode(c, root);
+        case '?': return new QuestionMarkNode(c, root);
+        case '*': return new StarNode(c, root);
+        case '+': return new PlusNode(c, root);
+        default: return new LeafNode(c, root);
     }
 }
 
@@ -114,10 +114,12 @@ map<int, string> RegularExpression::getSubExpressions(string s) {
 }
 
 Node* RegularExpression::getTree() {
-    return getTree(normalize());
+    Node *root = new LambdaNode('L', 0);
+    root->setLeft(getTree(normalize(), root));
+    return root;
 }
 
-Node* RegularExpression::getTree(string re) {
+Node* RegularExpression::getTree(string re, Node *parent) {
     int less_prior_position = getLessPriority(re);
 
     int size = re.size();
@@ -130,28 +132,28 @@ Node* RegularExpression::getTree(string re) {
     if (re.empty()) {
         return NULL;
     } else if (!(re.empty()) && less_prior_position == -1) {
-        return new LeafNode(re[0]);
+        return new LeafNode(re[0], parent);
     }
 
     char op = re.at(less_prior_position);
-    Node* root = getNode(op);
+    Node* root = getNode(op, parent);
 
     string subre_left = re.substr(0, less_prior_position);
     string subre_right = re.substr(less_prior_position+1);
-    Node* left_child = getTree(subre_left);
-    Node* right_child = getTree(subre_right);
-    if (left_child && !left_child->getRight()) {
-        left_child->setParent(root);
-    }
-    if (left_child && !right_child) {
-        Node *right = left_child->getRight();
-        while (right) {
-            if (!right->getRight()) {
-                right->setParent(root);
-            }
-            right = right->getRight();
-        }
-    }
+    Node* left_child = getTree(subre_left, root);
+    Node* right_child = getTree(subre_right, root);
+    // if (left_child && !left_child->getRight()) {
+    //     left_child->setParent(root);
+    // }
+    // if (left_child && !right_child) {
+    //     Node *right = left_child->getRight();
+    //     while (right) {
+    //         if (!right->getRight()) {
+    //             right->setParent(root);
+    //         }
+    //         right = right->getRight();
+    //     }
+    // }
     root->setLeft(left_child);
     root->setRight(right_child);
 
@@ -165,7 +167,7 @@ string printTree(Node *root) {
     nodes.push(root);
     map<Node*, string> names;
     int i = 0;
-    result.append("digraph {\n\tgraph [ranksep=\"equally\",nodesep=\"0.5\"];\n");
+    result.append("digraph {\n\tgraph [ranksep=\"equally\",nodesep=\"0.5\",ordering=\"out\",root=\"n1\"];\n");
     while (!nodes.empty()) {
         Node *n = nodes.front();
         nodes.pop();
@@ -176,19 +178,32 @@ string printTree(Node *root) {
             nodes.push(n->getRight());
         }
         string name = "n"+to_string(i);
+        names[n] = name;
+        i++;
+        if (n->getType() == LAMBDA) {
+            continue;
+        }
+        Node *parent = n->getParent();
+        if (parent && parent->getType() == LAMBDA) {
+            result.append("\t\"");
+            result.append(names[parent]);
+            result.append("\" [image=\"lines.png\",label=\"\",imagepos=\"ml\",imagescale=\"none\",shape=\"none\"];\n");
+        }
         result.append("\t\"");
         result.append(name);
         result.append("\" [label=\"");
         result.append(1, n->getValue());
         result.append("\",shape=\"circle\"];\n");
-        names[n] = name;
-        i++;
     }
     nodes.push(root);
     i = 0;
     while (!nodes.empty()) {
         Node *n = nodes.front();
         nodes.pop();
+        if (n->getType() == LAMBDA) {
+            nodes.push(n->getLeft());
+            continue;
+        }
         string rank = "\t{rank=\"same\" \"";
         if (n->getLeft()) {
             nodes.push(n->getLeft());
@@ -204,20 +219,6 @@ string printTree(Node *root) {
             result.append("\t\"");
             result.append(name);
             result.append("\" [style=\"invis\",shape=\"circle\"],label=\"0\";\n");
-            result.append("\t\"");
-            result.append(names[n]);
-            result.append("\" -> \"");
-            result.append(name);
-            result.append("\" [style=\"invis\"];\n");
-            rank.append(name);
-            rank.append("\" -> \"");
-            i++;
-        }
-        if (n->getLeft() || n->getRight()) {
-            string name = "null"+to_string(i);
-            result.append("\t\"");
-            result.append(name);
-            result.append("\" [style=\"invis\",shape=\"circle\",label=\"0\"];\n");
             result.append("\t\"");
             result.append(names[n]);
             result.append("\" -> \"");
@@ -261,13 +262,18 @@ string printTree(Node *root) {
             result.append("\" -> \"");
             result.append(names[n->getParent()]);
             result.append("\" [style=dotted];\n");
+            if (n->getParent()->getType() == LAMBDA) {
+                result.append("\n\t{rank=\"same\" \"");
+                result.append(names[n]);
+                result.append("\" -> \"n0\" [style=\"invis\"]}");
+            }
         }
     }
-    result.append("\toverlap=false;\n}\n");
+    result.append("\n}\n");
     return result;
 }
 int main() {
-    RegularExpression re("(0|1(01*0)*1)*");
+    RegularExpression re("(ab|ac)*a?|(ba?c)*");
     cout << printTree(re.getTree()) << endl;
     return 0;
 }

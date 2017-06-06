@@ -24,14 +24,13 @@ class NodeAction {
 
 class Node {
   public:
-    Node(char v);
+    Node(char v, Node *root);
     Node* getLeft();
     Node* getRight();
     Node* getParent();
     char getValue();
     void setRight(Node* n);
     void setLeft(Node* n);
-    void setParent(Node* n);
     virtual list<NodeAction> descend() = 0;
     virtual list<NodeAction> ascend() = 0;
     virtual NodeType getType() = 0;
@@ -39,7 +38,7 @@ class Node {
   private:
     Node *left;
     Node *right;
-    Node *parent;
+    Node *root;
     char value;
 };
 
@@ -53,8 +52,10 @@ class DotNode : public Node {
     NodeType getType();
 };
 
-class LambdaNode : Node {
+class LambdaNode : public Node {
   public:
+      using Node::Node;
+
       list<NodeAction> ascend();
       list<NodeAction> descend();
       NodeType getType();
