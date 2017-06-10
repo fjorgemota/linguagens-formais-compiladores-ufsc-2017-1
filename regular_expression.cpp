@@ -298,8 +298,3 @@ string printTree(T *root) {
     result.append("\n}\n");
     return result;
 }
-int main() {
-    RegularExpression re("(aa)**(bb)*+(cc)*?(dd)++(ee)+*(ff)+?(gg)?+(hh)?*(ii)??");
-    cout << printTree(re.getTree()) << endl;
-    return 0;
-}
