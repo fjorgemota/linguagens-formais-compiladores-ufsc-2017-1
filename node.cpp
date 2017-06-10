@@ -13,7 +13,7 @@ Direction NodeAction::getDirection() {
     return this->direction;
 }
 
-Node::Node(char v, Node *root) : value(v), root(root), left(0), right(0) {}
+Node::Node(char v, Node *root) : left(0), right(0), root(root), value(v) {}
 
 Node* Node::getLeft() {
     return this->left;
