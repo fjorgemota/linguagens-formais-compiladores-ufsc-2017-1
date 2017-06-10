@@ -12,6 +12,10 @@ class RegularExpressionTest : public testing::Test {
         virtual void SetUp() {
             this->re = new RegularExpression("(a|b)*");
         }
+
+        virtual void TearDown() {
+            delete this->re;
+        }
     protected:
         RegularExpression *re;
 };
@@ -40,4 +44,30 @@ TEST_F(RegularExpressionTest, getLessPriority) {
 
     r = "(1|0)?.((1.0)*.(0.1)*)*.(1|0)?";
     ASSERT_EQ(re->getLessPriority(r), 6);
+}
+
+TEST_F(RegularExpressionTest, getTree) {
+    re = new RegularExpression("(a|b)*");
+    Node* tree = re->getTree();
+
+    ASSERT_EQ(tree->getParent()->getValue(), 'L');
+    ASSERT_EQ(tree->getValue(), '*');
+    ASSERT_EQ(tree->getType(), STAR);
+
+    ASSERT_EQ(tree->getLeft()->getValue(), '|');
+    ASSERT_EQ(tree->getLeft()->getType(), UNION);
+
+    ASSERT_EQ(tree->getLeft()->getLeft()->getParent()->getValue(), '|');
+    ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'a');
+    ASSERT_EQ(tree->getLeft()->getLeft()->getType(), LEAF);
+
+    ASSERT_EQ(tree->getLeft()->getRight()->getParent()->getValue(), '*');
+    ASSERT_EQ(tree->getLeft()->getRight()->getValue(), 'b');
+    ASSERT_EQ(tree->getLeft()->getRight()->getType(), LEAF);
+
+    ASSERT_FALSE(tree->getRight());
+    ASSERT_FALSE(tree->getLeft()->getLeft()->getLeft());
+    ASSERT_FALSE(tree->getLeft()->getLeft()->getRight());
+    ASSERT_FALSE(tree->getLeft()->getRight()->getLeft());
+    ASSERT_FALSE(tree->getLeft()->getRight()->getRight());
 }
