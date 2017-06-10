@@ -18,6 +18,7 @@ class RegularExpression {
     bool isMultiplier(char c);
     bool isTerminal(char c);
     bool shouldConcatenate(char prev, char c);
+    char fixMultipliers(string multipliers);
 
     string regex;
 };

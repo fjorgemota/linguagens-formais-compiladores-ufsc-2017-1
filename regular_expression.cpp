@@ -29,20 +29,49 @@ int RegularExpression::getLessPriority(string re) {
 
 string RegularExpression::normalize() {
     string::iterator it = regex.begin();
-
-    char prev = *it;
     string result;
+    if (it == regex.end()) {
+        return result;
+    }
+    char prev = *it;
     result.append(1, prev);
+    string multipliers;
     for (++it; it != regex.end(); ++it) {
         char c = *it;
+        if (isMultiplier(c)) {
+            multipliers.append(1, c);
+            continue;
+        } else if(!multipliers.empty()) {
+            prev = fixMultipliers(multipliers);
+            result.append(1, prev);
+            multipliers = "";
+        }
         if (shouldConcatenate(prev, c)) {
             result.append(1, '.');
         }
         result.append(1, c);
-        prev = *it;
+        prev = c;
+    }
+    if(!multipliers.empty()) {
+        prev = fixMultipliers(multipliers);
+        result.append(1, prev);
+        multipliers = "";
     }
     return result;
 }
+
+char RegularExpression::fixMultipliers(string multipliers) {
+    string::iterator mit = multipliers.begin();
+    char multiplier = *mit;
+    for (++mit; mit != multipliers.end(); ++mit) {
+        if (multiplier != *mit) {
+            multiplier = '*';
+            break;
+        }
+    }
+    return multiplier;
+}
+
 
 int RegularExpression::getOrder(char c) {
     if (c == '|') {
@@ -70,7 +99,9 @@ bool RegularExpression::shouldConcatenate(char prev, char c) {
         return true;
     }
     return (isMultiplier(prev) && cTerminal) ||
-            ((isMultiplier(prev) || pTerminal) && c == '(');
+            ((isMultiplier(prev) || pTerminal) && c == '(' ||
+            (prev == ')' && c == '(') ||
+            (prev == ')' && cTerminal));
 }
 
 Node* RegularExpression::getNode(char c, Node *root) {
@@ -115,8 +146,9 @@ map<int, string> RegularExpression::getSubExpressions(string s) {
 
 Node* RegularExpression::getTree() {
     Node *root = new LambdaNode('L', 0);
-    root->setLeft(getTree(normalize(), root));
-    return root;
+    Node *tree = getTree(normalize(), root);
+    root->setLeft(tree);
+    return tree;
 }
 
 Node* RegularExpression::getTree(string re, Node *parent) {
@@ -142,18 +174,6 @@ Node* RegularExpression::getTree(string re, Node *parent) {
     string subre_right = re.substr(less_prior_position+1);
     Node* left_child = getTree(subre_left, root);
     Node* right_child = getTree(subre_right, root);
-    // if (left_child && !left_child->getRight()) {
-    //     left_child->setParent(root);
-    // }
-    // if (left_child && !right_child) {
-    //     Node *right = left_child->getRight();
-    //     while (right) {
-    //         if (!right->getRight()) {
-    //             right->setParent(root);
-    //         }
-    //         right = right->getRight();
-    //     }
-    // }
     root->setLeft(left_child);
     root->setRight(right_child);
 
@@ -161,15 +181,16 @@ Node* RegularExpression::getTree(string re, Node *parent) {
 }
 
 
-string printTree(Node *root) {
+template<typename T>
+string printTree(T *root) {
     string result;
-    queue<Node*> nodes;
+    queue<T*> nodes;
     nodes.push(root);
-    map<Node*, string> names;
+    map<T*, string> names;
     int i = 0;
-    result.append("digraph {\n\tgraph [ranksep=\"equally\",nodesep=\"0.5\",ordering=\"out\",root=\"n1\"];\n");
+    result.append("digraph {\n\tgraph [ranksep=\"equally\",nodesep=\"0.5\",ordering=\"out\"];\n");
     while (!nodes.empty()) {
-        Node *n = nodes.front();
+        T *n = nodes.front();
         nodes.pop();
         if (n->getLeft()) {
             nodes.push(n->getLeft());
@@ -183,11 +204,14 @@ string printTree(Node *root) {
         if (n->getType() == LAMBDA) {
             continue;
         }
-        Node *parent = n->getParent();
+        T *parent = n->getParent();
         if (parent && parent->getType() == LAMBDA) {
+            string lambdaName = "n"+to_string(i);
+            names[parent] = lambdaName;
             result.append("\t\"");
-            result.append(names[parent]);
+            result.append(lambdaName);
             result.append("\" [image=\"lines.png\",label=\"\",imagepos=\"ml\",imagescale=\"none\",shape=\"none\"];\n");
+            i++;
         }
         result.append("\t\"");
         result.append(name);
@@ -198,7 +222,7 @@ string printTree(Node *root) {
     nodes.push(root);
     i = 0;
     while (!nodes.empty()) {
-        Node *n = nodes.front();
+        T *n = nodes.front();
         nodes.pop();
         if (n->getType() == LAMBDA) {
             nodes.push(n->getLeft());
@@ -265,7 +289,9 @@ string printTree(Node *root) {
             if (n->getParent()->getType() == LAMBDA) {
                 result.append("\n\t{rank=\"same\" \"");
                 result.append(names[n]);
-                result.append("\" -> \"n0\" [style=\"invis\"]}");
+                result.append("\" -> \"");
+                result.append(names[n->getParent()]);
+                result.append("\" [style=\"invis\"]}\n");
             }
         }
     }
@@ -273,7 +299,7 @@ string printTree(Node *root) {
     return result;
 }
 int main() {
-    RegularExpression re("(ab|ac)*a?|(ba?c)*");
+    RegularExpression re("(aa)**(bb)*+(cc)*?(dd)++(ee)+*(ff)+?(gg)?+(hh)?*(ii)??");
     cout << printTree(re.getTree()) << endl;
     return 0;
 }
