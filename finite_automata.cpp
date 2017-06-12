@@ -613,7 +613,7 @@ FiniteAutomata FiniteAutomata::doComplement() const {
 FiniteAutomata FiniteAutomata::doDifference(FiniteAutomata other) const {
     FiniteAutomata l1(*this), l2(other);
     l2 = l2.doComplement();
-    return l1.doUnion(l2);
+    return l1.doIntersection(l2);
 }
 
 
