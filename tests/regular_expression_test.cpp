@@ -103,7 +103,7 @@ TEST_F(RegularExpressionTest, getTree) {
             QUESTION);
     ASSERT_EQ(tree->getRight()->getLeft()->getLeft()->getParent()->getValue(),
             '?');
-    
+
     ASSERT_EQ(tree->getRight()->getRight()->getLeft()->getValue(), '*');
     ASSERT_EQ(tree->getRight()->getRight()->getLeft()->getType(), STAR);
     ASSERT_EQ(tree->getRight()->getRight()->getLeft()->getParent()->getValue(),
@@ -115,7 +115,7 @@ TEST_F(RegularExpressionTest, getTree) {
             '.');
     ASSERT_EQ(tree->getRight()->getRight()->getLeft()->getLeft()->getType(),
             DOT);
-    
+
     ASSERT_EQ(
         tree->getRight()->getRight()->getLeft()->getLeft()->getLeft()->getValue(),
         '?');
@@ -160,7 +160,7 @@ TEST_F(RegularExpressionTest, getTreeStarPlus) {
     Node *tree = re->getTree();
 
     ASSERT_EQ(tree->getValue(), '*');
-    ASSERT_EQ(tree->getParent()->getValue(), 'L');
+    ASSERT_EQ(tree->getParent()->getType(), LAMBDA);
 
     ASSERT_EQ(tree->getLeft()->getValue(), '.');
     ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'b');
@@ -181,7 +181,7 @@ TEST_F(RegularExpressionTest, getTreeStarQuestion) {
     Node *tree = re->getTree();
 
     ASSERT_EQ(tree->getValue(), '*');
-    ASSERT_EQ(tree->getParent()->getValue(), 'L');
+    ASSERT_EQ(tree->getParent()->getType(), LAMBDA);
     ASSERT_EQ(tree->getLeft()->getValue(), '.');
     ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'c');
     ASSERT_EQ(tree->getLeft()->getLeft()->getParent()->getValue(), '.');
@@ -202,7 +202,7 @@ TEST_F(RegularExpressionTest, getTreePlusPlus) {
     Node *tree = re->getTree();
 
     ASSERT_EQ(tree->getValue(), '+');
-    ASSERT_EQ(tree->getParent()->getValue(), 'L');
+    ASSERT_EQ(tree->getParent()->getType(), LAMBDA);
     ASSERT_EQ(tree->getLeft()->getValue(), '.');
     ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'd');
     ASSERT_EQ(tree->getLeft()->getLeft()->getParent()->getValue(), '.');
@@ -223,7 +223,7 @@ TEST_F(RegularExpressionTest, getTreePlusStar) {
     Node *tree = re->getTree();
 
     ASSERT_EQ(tree->getValue(), '*');
-    ASSERT_EQ(tree->getParent()->getValue(), 'L');
+    ASSERT_EQ(tree->getParent()->getType(), LAMBDA);
     ASSERT_EQ(tree->getLeft()->getValue(), '.');
     ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'e');
     ASSERT_EQ(tree->getLeft()->getLeft()->getParent()->getValue(), '.');
@@ -244,7 +244,7 @@ TEST_F(RegularExpressionTest, getTreePlusQuestion) {
     Node *tree = re->getTree();
 
     ASSERT_EQ(tree->getValue(), '*');
-    ASSERT_EQ(tree->getParent()->getValue(), 'L');
+    ASSERT_EQ(tree->getParent()->getType(), LAMBDA);
     ASSERT_EQ(tree->getLeft()->getValue(), '.');
     ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'f');
     ASSERT_EQ(tree->getLeft()->getLeft()->getParent()->getValue(), '.');
@@ -265,7 +265,7 @@ TEST_F(RegularExpressionTest, getTreeQuestionPlus) {
     Node *tree = re->getTree();
 
     ASSERT_EQ(tree->getValue(), '*');
-    ASSERT_EQ(tree->getParent()->getValue(), 'L');
+    ASSERT_EQ(tree->getParent()->getType(), LAMBDA);
     ASSERT_EQ(tree->getLeft()->getValue(), '.');
     ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'g');
     ASSERT_EQ(tree->getLeft()->getLeft()->getParent()->getValue(), '.');
@@ -286,7 +286,7 @@ TEST_F(RegularExpressionTest, getTreeQuestionStar) {
     Node *tree = re->getTree();
 
     ASSERT_EQ(tree->getValue(), '*');
-    ASSERT_EQ(tree->getParent()->getValue(), 'L');
+    ASSERT_EQ(tree->getParent()->getType(), LAMBDA);
     ASSERT_EQ(tree->getLeft()->getValue(), '.');
     ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'h');
     ASSERT_EQ(tree->getLeft()->getLeft()->getParent()->getValue(), '.');
@@ -307,7 +307,7 @@ TEST_F(RegularExpressionTest, getTreeQuestionQuestion) {
     Node *tree = re->getTree();
 
     ASSERT_EQ(tree->getValue(), '?');
-    ASSERT_EQ(tree->getParent()->getValue(), 'L');
+    ASSERT_EQ(tree->getParent()->getType(), LAMBDA);
     ASSERT_EQ(tree->getLeft()->getValue(), '.');
     ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'i');
     ASSERT_EQ(tree->getLeft()->getLeft()->getParent()->getValue(), '.');
@@ -319,5 +319,43 @@ TEST_F(RegularExpressionTest, getTreeQuestionQuestion) {
     ASSERT_FALSE(tree->getLeft()->getLeft()->getLeft());
     ASSERT_FALSE(tree->getLeft()->getLeft()->getRight());
     ASSERT_FALSE(tree->getLeft()->getRight()->getLeft());
+    ASSERT_FALSE(tree->getLeft()->getRight()->getRight());
+}
+
+TEST_F(RegularExpressionTest, getTreeConcatenateSubExpression) {
+    re = new RegularExpression("(ab)(cd)");
+
+    Node *tree = re->getTree();
+
+    ASSERT_EQ(tree->getValue(), '.');
+    ASSERT_EQ(tree->getLeft()->getValue(), '.');
+    ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), 'a');
+    ASSERT_EQ(tree->getLeft()->getLeft()->getParent(), tree->getLeft());
+    ASSERT_EQ(tree->getLeft()->getRight()->getValue(), 'b');
+    ASSERT_EQ(tree->getLeft()->getRight()->getParent(), tree);
+
+    ASSERT_EQ(tree->getRight()->getLeft()->getValue(), 'c');
+    ASSERT_EQ(tree->getRight()->getLeft()->getParent(), tree->getRight());
+    ASSERT_EQ(tree->getRight()->getRight()->getValue(), 'd');
+    ASSERT_EQ(tree->getRight()->getRight()->getParent()->getType(), LAMBDA);
+
+    ASSERT_FALSE(tree->getParent());
+    ASSERT_FALSE(tree->getLeft()->getParent());
+    ASSERT_FALSE(tree->getLeft()->getLeft()->getLeft());
+    ASSERT_FALSE(tree->getLeft()->getLeft()->getRight());
     ASSERT_FALSE(tree->getLeft()->getRight()->getLeft());
+    ASSERT_FALSE(tree->getLeft()->getRight()->getRight());
+
+    ASSERT_FALSE(tree->getRight()->getParent());
+    ASSERT_FALSE(tree->getRight()->getLeft()->getLeft());
+    ASSERT_FALSE(tree->getRight()->getLeft()->getRight());
+    ASSERT_FALSE(tree->getRight()->getRight()->getLeft());
+    ASSERT_FALSE(tree->getRight()->getRight()->getRight());
+}
+
+TEST_F(RegularExpressionTest, getTreeEmpty) {
+    re = new RegularExpression("");
+
+    Node *tree = re->getTree();
+    ASSERT_EQ(tree->getType(), LAMBDA);
 }
