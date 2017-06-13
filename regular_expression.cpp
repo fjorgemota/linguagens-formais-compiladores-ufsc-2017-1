@@ -99,7 +99,7 @@ bool RegularExpression::shouldConcatenate(char prev, char c) {
         return true;
     }
     return (isMultiplier(prev) && cTerminal) ||
-            ((isMultiplier(prev) || pTerminal) && c == '(' ||
+            (((isMultiplier(prev) || pTerminal) && c == '(') ||
             (prev == ')' && c == '(') ||
             (prev == ')' && cTerminal));
 }
@@ -115,40 +115,15 @@ Node* RegularExpression::getNode(char c, Node *root) {
     }
 }
 
-map<int, string> RegularExpression::getSubExpressions(string s) {
-    map<int, string> result;
-    int numParenthesis;
-    string subExpr;
-    int i = 0;
-    for (const char &c: s) {
-        if (c == '(') {
-            if (numParenthesis == 0) {
-                subExpr = string();
-            }
-            numParenthesis++;
-            i++;
-            continue;
-        }
-        if (numParenthesis > 0 && !(numParenthesis == 1 && c == ')')) {
-            subExpr.append(1, c);
-        }
-        if (c == ')') {
-            numParenthesis--;
-            if (numParenthesis == 0) {
-                result[i] = subExpr;
-                result[i-subExpr.size()-1] = subExpr;
-            }
-        }
-        i++;
-    }
-    return result;
-}
-
 Node* RegularExpression::getTree() {
     Node *root = new LambdaNode('L', 0);
     Node *tree = getTree(normalize(), root);
-    root->setLeft(tree);
-    return tree;
+    if (tree) {
+        root->setLeft(tree);
+        return tree;
+    } else {
+        return root;
+    }
 }
 
 Node* RegularExpression::getTree(string re, Node *parent) {
@@ -164,7 +139,7 @@ Node* RegularExpression::getTree(string re, Node *parent) {
     if (re.empty()) {
         return NULL;
     } else if (!(re.empty()) && less_prior_position == -1) {
-        return new LeafNode(re[0], parent);
+        return getNode(re[0], parent);
     }
 
     char op = re.at(less_prior_position);
@@ -188,7 +163,7 @@ string printTree(T *root) {
     nodes.push(root);
     map<T*, string> names;
     int i = 0;
-    result.append("digraph {\n\tgraph [ranksep=\"equally\",nodesep=\"0.5\",ordering=\"out\"];\n");
+    result.append("digraph {\n\tgraph [ranksep=\"equally\",nodesep=\"0.5\",ordering=\"out\",fontpath=\".\",fontname=\"Ubuntu-B\"];\n\tnode[fontname=\"Ubuntu-B\"];\n\tedge[fontname=\"Ubuntu-B\"];\n");
     while (!nodes.empty()) {
         T *n = nodes.front();
         nodes.pop();

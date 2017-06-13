@@ -11,7 +11,6 @@ class RegularExpression {
     Node* getTree();
 
   private:
-    map<int, string> getSubExpressions(string s);
     Node* getNode(char c, Node *root);
     Node* getTree(string re, Node *root);
     int getOrder(char c);
