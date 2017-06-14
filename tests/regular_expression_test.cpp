@@ -353,6 +353,28 @@ TEST_F(RegularExpressionTest, getTreeConcatenateSubExpression) {
     ASSERT_FALSE(tree->getRight()->getRight()->getRight());
 }
 
+TEST_F(RegularExpressionTest, getTreeConcatenateMess) {
+    re = new RegularExpression("(a|b)+++++*****?**+a");
+
+    Node *tree = re->getTree();
+
+    ASSERT_EQ(tree->getValue(), '.');
+    ASSERT_EQ(tree->getLeft()->getValue(), '*');
+    ASSERT_EQ(tree->getLeft()->getParent()->getType(), DOT);
+
+    ASSERT_EQ(tree->getLeft()->getLeft()->getValue(), '|');
+    ASSERT_EQ(tree->getLeft()->getLeft()->getLeft()->getValue(), 'a');
+    ASSERT_EQ(tree->getLeft()->getLeft()->getLeft()->getParent()->getType(),
+            UNION);
+
+    ASSERT_EQ(tree->getLeft()->getLeft()->getRight()->getValue(), 'b');
+    ASSERT_EQ(tree->getLeft()->getLeft()->getRight()->getParent()->getType(),
+            STAR);
+
+    ASSERT_EQ(tree->getRight()->getValue(), 'a');
+    ASSERT_EQ(tree->getRight()->getParent()->getType(), LAMBDA);
+}
+
 TEST_F(RegularExpressionTest, getTreeEmpty) {
     re = new RegularExpression("");
 
