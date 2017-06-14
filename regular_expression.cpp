@@ -155,6 +155,59 @@ Node* RegularExpression::getTree(string re, Node *parent) {
     return root;
 }
 
+map<Node*, set<Node*>> getTable(Node* tree) {
+    map<Node*, set<Node*>> table;
+    set<Node*> achievable;
+    list<NodeAction> to_process;
+    Node *leaf;
+    queue<Node*> leaves;
+    Node *root = tree;
+
+    list<Node*> nodes;
+    nodes.push_back(root);
+
+    while (!nodes.empty()) {
+        root = nodes.back();
+        nodes.pop_back();
+
+        if (root->getType() == LEAF) {
+            leaves.push(root);
+        }
+        if (root->getLeft()) {
+            nodes.push_back(root->getLeft());
+        }
+        if (root->getRight()) {
+            nodes.push_back(root->getLeft());
+        }
+    }
+
+    while(!leaves.empty()) {
+        leaf = leaves.front();
+        leaves.pop();
+        to_process = leaf->ascend();
+        NodeAction child = to_process.back();
+        to_process.pop_back();
+        root = child.getNode();
+
+        while (!to_process.empty()) {
+            if (root->getType() == LEAF) {
+                achievable.insert(root);
+            } else if (child.getDirection() == up) {
+                auto it = to_process.begin();
+                to_process.insert(it, root->ascend().begin(),
+                        root->ascend().end());
+            } else if (child.getDirection() == down) {
+                auto it = to_process.begin();
+                to_process.insert(it, root->descend().begin(),
+                        root->descend().end());
+            }
+        }
+
+        table[leaf] = achievable;
+    }
+
+    return table;
+}
 
 template<typename T>
 string printTree(T *root) {

@@ -9,6 +9,7 @@ class RegularExpression {
     int getLessPriority(string re);
     string normalize();
     Node* getTree();
+    map<Node*, set<Node*>> getTable(Node* tree);
 
   private:
     Node* getNode(char c, Node *root);
