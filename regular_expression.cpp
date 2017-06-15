@@ -185,21 +185,22 @@ map<Node*, set<Node*>> getTable(Node* tree) {
         leaf = leaves.front();
         leaves.pop();
         to_process = leaf->ascend();
-        NodeAction child = to_process.back();
-        to_process.pop_back();
-        root = child.getNode();
 
         while (!to_process.empty()) {
-            if (root->getType() == LEAF) {
+            NodeAction child = to_process.back();
+            to_process.pop_back();
+            root = child.getNode();
+
+            if (root->getType() == LEAF || root->getType() == LAMBDA) {
                 achievable.insert(root);
             } else if (child.getDirection() == up) {
                 auto it = to_process.begin();
-                to_process.insert(it, root->ascend().begin(),
-                        root->ascend().end());
+                auto ascend = root->ascend();
+                to_process.insert(it, ascend.begin(), ascend.end());
             } else if (child.getDirection() == down) {
                 auto it = to_process.begin();
-                to_process.insert(it, root->descend().begin(),
-                        root->descend().end());
+                auto descend = root->descend();
+                to_process.insert(it, descend.begin(), descend.end());
             }
         }
 
@@ -207,6 +208,34 @@ map<Node*, set<Node*>> getTable(Node* tree) {
     }
 
     return table;
+}
+
+set<Node*> getFirstComposition(Node* tree) {
+    Node *root = tree;
+    map<Node*, set<Node*>> table = getTable(root);
+    set<Node*> composition;
+
+    list<NodeAction> to_process = root->descend();
+
+    while(!to_process.empty()) {
+        NodeAction child = to_process.back();
+        to_process.pop_back();
+        root = child.getNode();
+
+        if (root->getType() == LEAF || root->getType() == LAMBDA) {
+            composition.insert(root);
+        } else if (child.getDirection() == up) {
+            auto it = to_process.begin();
+            auto ascend = root->ascend();
+            to_process.insert(it, ascend.begin(), ascend.end());
+        } else if (child.getDirection() == down) {
+            auto it = to_process.begin();
+            auto descend = root->descend();
+            to_process.insert(it, descend.begin(), descend.end());
+        }
+    }
+
+    return composition;
 }
 
 template<typename T>

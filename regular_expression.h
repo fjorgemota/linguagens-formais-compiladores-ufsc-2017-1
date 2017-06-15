@@ -10,6 +10,7 @@ class RegularExpression {
     string normalize();
     Node* getTree();
     map<Node*, set<Node*>> getTable(Node* tree);
+    set<Node*> getFirstComposition();
 
   private:
     Node* getNode(char c, Node *root);
