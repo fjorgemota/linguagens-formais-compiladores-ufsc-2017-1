@@ -155,7 +155,7 @@ Node* RegularExpression::getTree(string re, Node *parent) {
     return root;
 }
 
-map<Node*, set<Node*>> getTable(Node* tree) {
+map<Node*, set<Node*>> RegularExpression::getCompositionPerLeaf(Node* tree) {
     map<Node*, set<Node*>> table;
     set<Node*> achievable;
     list<NodeAction> to_process;
@@ -185,21 +185,22 @@ map<Node*, set<Node*>> getTable(Node* tree) {
         leaf = leaves.front();
         leaves.pop();
         to_process = leaf->ascend();
-        NodeAction child = to_process.back();
-        to_process.pop_back();
-        root = child.getNode();
 
         while (!to_process.empty()) {
-            if (root->getType() == LEAF) {
+            NodeAction child = to_process.back();
+            to_process.pop_back();
+            root = child.getNode();
+
+            if (root->getType() == LEAF || root->getType() == LAMBDA) {
                 achievable.insert(root);
             } else if (child.getDirection() == up) {
                 auto it = to_process.begin();
-                to_process.insert(it, root->ascend().begin(),
-                        root->ascend().end());
+                auto ascend = root->ascend();
+                to_process.insert(it, ascend.begin(), ascend.end());
             } else if (child.getDirection() == down) {
                 auto it = to_process.begin();
-                to_process.insert(it, root->descend().begin(),
-                        root->descend().end());
+                auto descend = root->descend();
+                to_process.insert(it, descend.begin(), descend.end());
             }
         }
 
@@ -207,6 +208,99 @@ map<Node*, set<Node*>> getTable(Node* tree) {
     }
 
     return table;
+}
+
+set<Node*> RegularExpression::getFirstComposition(Node* tree) {
+    Node *root = tree;
+    map<Node*, set<Node*>> table = getCompositionPerLeaf(root);
+    set<Node*> composition;
+
+    list<NodeAction> to_process = root->descend();
+
+    while(!to_process.empty()) {
+        NodeAction child = to_process.back();
+        to_process.pop_back();
+        root = child.getNode();
+
+        if (root->getType() == LEAF || root->getType() == LAMBDA) {
+            composition.insert(root);
+        } else if (child.getDirection() == up) {
+            auto it = to_process.begin();
+            auto ascend = root->ascend();
+            to_process.insert(it, ascend.begin(), ascend.end());
+        } else if (child.getDirection() == down) {
+            auto it = to_process.begin();
+            auto descend = root->descend();
+            to_process.insert(it, descend.begin(), descend.end());
+        }
+    }
+
+    return composition;
+}
+
+set<char> RegularExpression::getAlphabet(map<Node*, set<Node*>> leaves_comp) {
+    set<char> alphabet;
+    for (auto &l : leaves_comp) {
+        alphabet.insert(l.first->getValue());
+    }
+
+    return alphabet;
+}
+
+bool RegularExpression::hasLambda(set<Node*> composition) {
+    for (Node *cps : composition) {
+        if (cps->getType() == LAMBDA) {
+            return true;
+        }
+    }
+    return false;
+}
+
+FiniteAutomata RegularExpression::getAutomata(Node *tree) {
+    map<Node*, set<Node*>> compositions = getCompositionPerLeaf(tree);
+    set<Node*> first_composition = getFirstComposition(tree);
+
+    set<char> alphabet = getAlphabet(compositions);
+    FiniteAutomata automata;
+
+    for (char s : alphabet) {
+        automata.addSymbol(s);
+    }
+
+    automata.addState("q0", FiniteAutomata::INITIAL_STATE |
+            (hasLambda(first_composition) ? FiniteAutomata::FINAL_STATE : 0));
+
+    map<set<Node*>, string> nodes;
+    int i = 0;
+    nodes[first_composition] = "q" + to_string(i);
+
+    queue<set<Node*>> q;
+    q.push(first_composition);
+
+    while (!q.empty()) {
+        set<Node*> comp = q.front();
+        q.pop();
+        map<char, set<Node*>> transition;
+        for (Node *ts : comp) {
+            if (ts->getType() != LAMBDA) {
+                transition[ts->getValue()].insert(compositions[ts].begin(),
+                        compositions[ts].end());
+            }
+        }
+
+        for (auto &trs : transition) {
+            if (!nodes.count(trs.second)) {
+                i++;
+                nodes[trs.second] = "q" + to_string(i);
+                q.push(trs.second);
+                automata.addState(nodes[trs.second], (hasLambda(trs.second) ?
+                            FiniteAutomata::FINAL_STATE : 0));
+            }
+            automata.addTransition(nodes[comp], trs.first, nodes[trs.second]);
+        }
+    }
+
+    return automata;
 }
 
 template<typename T>
