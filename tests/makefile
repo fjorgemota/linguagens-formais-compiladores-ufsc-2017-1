@@ -13,7 +13,7 @@ GTEST_PATH := $(DEPS_PATH)/googletest
 LCOV_PATH := $(shell which lcov)
 test: build-tests run-tests clean-tests
 debug-test: build-tests debug-tests clean-tests
-get-deps: $(GTEST_PATH)/googletest
+get-deps: 
 	mkdir -p $(DEPS_PATH); \
 	if [ ! -d "$(GTEST_PATH)" ]; then \
 		git clone --depth 1 -b release-1.8.0 https://github.com/google/googletest.git $(GTEST_PATH) && cd $(GTEST_PATH)/googletest && cmake . && make && cd -; \
