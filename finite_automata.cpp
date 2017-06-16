@@ -1,5 +1,4 @@
 #include "finite_automata.h"
-#include "all.h"
 
 FiniteAutomataState::FiniteAutomataState(): state(""), symbols("") {}
 
@@ -174,19 +173,19 @@ void FiniteAutomata::addState(string state, int type) {
     }
 }
 
-bool FiniteAutomata::hasState(string state) {
+bool FiniteAutomata::hasState(string state) const  {
     return states.count(state);
 }
 
-bool FiniteAutomata::isInitialState(string state) {
+bool FiniteAutomata::isInitialState(string state) const  {
     return initial_state == state;
 }
 
-bool FiniteAutomata::isFinalState(string state) {
+bool FiniteAutomata::isFinalState(string state) const {
     return final_states.count(state);
 }
 
-bool FiniteAutomata::hasSymbol(char symbol) {
+bool FiniteAutomata::hasSymbol(char symbol) const {
     return alphabet.count(symbol);
 }
 
@@ -504,8 +503,8 @@ bool FiniteAutomata::isComplete() const {
 }
 
 FiniteAutomata FiniteAutomata::complete() const {
-    FiniteAutomata result(*this);
-    string errorState = findFreeName();
+    FiniteAutomata result = determinize();
+    string errorState = result.findFreeName();
     result.addState(errorState);
     for (const char& symbol: alphabet) {
         if (symbol == EPSILON) {
@@ -513,13 +512,11 @@ FiniteAutomata FiniteAutomata::complete() const {
         }
         result.transitions[errorState][symbol].insert(errorState);
     }
-    for (const string& state: states) {
-        if (!transitions.count(state)) {
-            continue;
-        }
+    for (const string& state: result.states) {
         for (const char& symbol: alphabet) {
-            bool isEmpty = !transitions.at(state).count(symbol);
-            isEmpty = isEmpty || !transitions.at(state).at(symbol).empty();
+            bool isEmpty = !result.transitions.count(state);
+            isEmpty = isEmpty || !result.transitions.at(state).count(symbol);
+            isEmpty = isEmpty || result.transitions.at(state).at(symbol).empty();
             if (isEmpty && symbol != EPSILON) {
                 result.transitions[state][symbol].insert(errorState);
             }
@@ -532,7 +529,11 @@ FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) const {
     FiniteAutomata result;
     map<string, string> statesMapping, otherStatesMapping;
     string initialState = result.findFreeName();
-    result.addState(initialState, INITIAL_STATE);
+    int initialStateType = INITIAL_STATE;
+    if (isFinalState(initial_state) || other.isFinalState(other.initial_state)){
+        initialStateType |= FINAL_STATE;
+    }
+    result.addState(initialState, initialStateType);
     for (const char &symbol: alphabet) {
         if (symbol == EPSILON) {
             continue;
@@ -542,7 +543,11 @@ FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) const {
     for (const string &state: states) {
         string newName = result.findFreeName();
         statesMapping[state] = newName;
-        result.addState(newName);
+        int type = 0;
+        if (isFinalState(state)) {
+            type |= FINAL_STATE;
+        }
+        result.addState(newName, type);
     }
     for (const char &symbol: other.alphabet) {
         if (symbol == EPSILON) {
@@ -553,10 +558,12 @@ FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) const {
     for (const string &state: other.states) {
         string newName = result.findFreeName();
         otherStatesMapping[state] = newName;
-        result.addState(newName);
+        int type = 0;
+        if (other.isFinalState(state)) {
+            type |= FINAL_STATE;
+        }
+        result.addState(newName, type);
     }
-    string finalState = result.findFreeName();
-    result.addState(finalState, FINAL_STATE);
     for (const string &state: states) {
         if (!transitions.count(state)) {
             continue;
@@ -581,17 +588,16 @@ FiniteAutomata FiniteAutomata::doUnion(FiniteAutomata other) const {
     }
     result.addTransition(initialState, EPSILON, statesMapping[initial_state]);
     result.addTransition(initialState, EPSILON, otherStatesMapping[other.initial_state]);
-    for (const string &state: final_states) {
-        result.addTransition(statesMapping[state], EPSILON, finalState);
-    }
-    for (const string &state: other.final_states) {
-        result.addTransition(otherStatesMapping[state], EPSILON, finalState);
-    }
     return result;
 }
 
 FiniteAutomata FiniteAutomata::doIntersection(FiniteAutomata other) const {
     FiniteAutomata result, l1(*this), l2(other);
+    set<char> newAlphabet;
+    newAlphabet.insert(alphabet.begin(), alphabet.end());
+    newAlphabet.insert(other.alphabet.begin(), other.alphabet.end());
+    l1.alphabet = newAlphabet;
+    l2.alphabet = newAlphabet;
     l1 = l1.doComplement();
     l2 = l2.doComplement();
     result = l1.doUnion(l2);
@@ -617,7 +623,7 @@ FiniteAutomata FiniteAutomata::doDifference(FiniteAutomata other) const {
 }
 
 
-string FiniteAutomata::toASCIITable() {
+string FiniteAutomata::toASCIITable() const {
     string result;
     map<char, int> columnWidth;
     int largestState = 5;
@@ -638,10 +644,10 @@ string FiniteAutomata::toASCIITable() {
         bool found = false;
         for (string state: states) {
             int length = 2;
-            if (transitions[state][symbol].empty()) {
+            if (!transitions.count(state) || !transitions.at(state).count(symbol) || transitions.at(state).at(symbol).empty()) {
                 length++;
             } else {
-                string transition = formatStates(transitions[state][symbol], false);
+                string transition = formatStates(transitions.at(state).at(symbol), false);
                 length += transition.length();
                 found = true;
             }
@@ -664,7 +670,7 @@ string FiniteAutomata::toASCIITable() {
     for (char symbol: alphabet) {
         bool found = false;
         for (string state: states) {
-            if (!transitions[state][symbol].empty()) {
+            if (transitions.count(state) && transitions.at(state).count(symbol) && !transitions.at(state).at(symbol).empty()) {
                 found = true;
                 break;
             }
@@ -709,7 +715,7 @@ string FiniteAutomata::toASCIITable() {
         result.append(state);
         result.append(largestState-margin-state.length(), ' ');
         for (char symbol: alphabet) {
-            if (transitions[state][symbol].empty()) {
+            if (!transitions.count(state) || !transitions.at(state).count(symbol) || transitions.at(state).at(symbol).empty()) {
                 if (columnWidth.count(symbol)) {
                     result.append("| -");
                     result.append(columnWidth[symbol]-2, ' ');
@@ -717,7 +723,7 @@ string FiniteAutomata::toASCIITable() {
                 continue;
             }
             result.append("| ");
-            string transition = formatStates(transitions[state][symbol], false);
+            string transition = formatStates(transitions.at(state).at(symbol), false);
             result.append(transition);
             result.append(columnWidth[symbol]-transition.length()-1, ' ');
         }
@@ -739,7 +745,7 @@ set<string> FiniteAutomata::getClosure(string state) const {
     while (!q.empty()) {
         string s = q.front();
         q.pop();
-        if (s.empty() || results.count(s) == 1) {
+        if (s.empty() || results.count(s)) {
             continue;
         }
         results.insert(s);

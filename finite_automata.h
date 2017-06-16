@@ -1,8 +1,7 @@
 #ifndef FINITE_AUTOMATA_H
 #define FINITE_AUTOMATA_H
 
-#include "all.h"
-
+#include <all.h>
 
 class FiniteAutomataException : public runtime_error {
 public:
@@ -55,15 +54,15 @@ public:
 
     void addState(string state, int type = 0);
 
-    bool hasState(string state);
+    bool hasState(string state) const;
 
-    bool hasSymbol(char symbol);
+    bool hasSymbol(char symbol) const;
 
-    bool isFinalState(string state);
+    bool isFinalState(string state) const;
 
-    bool isInitialState(string state);
+    bool isInitialState(string state) const;
 
-    bool isSymbol(char symbol);
+    bool isSymbol(char symbol) const;
 
     bool hasTransition(string source, char symbol, string target);
 
@@ -93,7 +92,7 @@ public:
 
     FiniteAutomata doDifference(FiniteAutomata other) const;
 
-    string toASCIITable();
+    string toASCIITable() const;
 
     FiniteAutomataGenerator generates();
 
