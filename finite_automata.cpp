@@ -30,12 +30,10 @@ const int FiniteAutomata::FINAL_STATE = 1 << 0;
 const char FiniteAutomata::EPSILON = '&';
 
 FiniteAutomata::FiniteAutomataGenerator::FiniteAutomataGenerator(FiniteAutomata &f) : finite_automata(f), actual_states() {
-    for (string state: f.getClosure(f.initial_state)) {
-        FiniteAutomataState actualState;
-        actualState.State(state);
-        actualState.Symbols("");
-        actual_states.push(actualState);
-    }
+    FiniteAutomataState actualState;
+    actualState.State(f.initial_state);
+    actualState.Symbols("");
+    actual_states.push(actualState);
 }
 
 bool FiniteAutomata::FiniteAutomataGenerator::operator!=(FiniteAutomata::FiniteAutomataGenerator)
