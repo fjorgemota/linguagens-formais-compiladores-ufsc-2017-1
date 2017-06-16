@@ -3,17 +3,46 @@
 
 #include <all.h>
 
+/*!
+ * Exception that is emitted when an invalid operation is done in the
+ * Finite Automata
+ */
 class FiniteAutomataException : public runtime_error {
 public:
     using runtime_error::runtime_error;
 };
 
+/*!
+ * Class that stores a state of the generator of the FiniteAutomata
+ *
+ * @see FiniteAutomata::FiniteAutomataGenerator
+ */
 class FiniteAutomataState {
     public:
+        /*!
+         * Initialize an empty FiniteAutomataState
+         */
         FiniteAutomataState();
+
+        /*!
+         * Copy an existing FiniteAutomataState into a new object
+         */
         FiniteAutomataState(const FiniteAutomataState &fstate);
+
+        /*!
+         * Return the State that this object represents
+         *
+         * @return The actual state of the automata
+         */
         string State();
+
+        /*!
+         * Set the actual state that this object represents
+         *
+         * @param state The actual state of this object
+         */
         void State(string state);
+
         string Symbols();
         void Symbols(string symbols);
     private:
