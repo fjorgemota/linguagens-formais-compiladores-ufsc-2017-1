@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "node.cpp"
+#include "finite_automata.cpp"
 #include "regular_expression.h"
 
 int main(int argc, char **argv) {
