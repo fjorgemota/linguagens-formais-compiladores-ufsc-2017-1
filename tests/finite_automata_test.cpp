@@ -18,7 +18,8 @@ class FiniteAutomataTest : public testing::Test {
 TEST_F(FiniteAutomataTest, addState) {
     ASSERT_FALSE(f.hasState("q0"));
     f.addState("q0");
-    ASSERT_EQ(f.getStates().size(), 1);
+    int size = f.getStates().size();
+    ASSERT_EQ(size, 1);
     ASSERT_TRUE(f.hasState("q0"));
 }
 
@@ -29,7 +30,8 @@ TEST_F(FiniteAutomataTest, addStateWithArrow) {
     ASSERT_FALSE(f.isInitialState("q0"));
     f.addState("->q0");
     ASSERT_FALSE(f.hasState("->q0"));
-    ASSERT_EQ(f.getStates().size(), 1);
+    int size = f.getStates().size();
+    ASSERT_EQ(size, 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_TRUE(f.isInitialState("q0"));
 }
@@ -40,7 +42,8 @@ TEST_F(FiniteAutomataTest, addStateWithAsterisk) {
     ASSERT_FALSE(f.isFinalState("q0"));
     f.addState("*q0");
     ASSERT_FALSE(f.hasState("*q0"));
-    ASSERT_EQ(f.getStates().size(), 1);
+    int size = f.getStates().size();
+    ASSERT_EQ(size, 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_TRUE(f.isFinalState("q0"));
 }
@@ -58,7 +61,8 @@ TEST_F(FiniteAutomataTest, addStateWithAsteriskAndArrow) {
     ASSERT_FALSE(f.hasState("*q0"));
     ASSERT_FALSE(f.hasState("*->q0"));
     ASSERT_FALSE(f.hasState("->*q0"));
-    ASSERT_EQ(f.getStates().size(), 1);
+    int size = f.getStates().size();
+    ASSERT_EQ(size, 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_TRUE(f.isInitialState("q0"));
     ASSERT_TRUE(f.isFinalState("q0"));
@@ -77,7 +81,8 @@ TEST_F(FiniteAutomataTest, addStateWithArrowAndAsterisk) {
     ASSERT_FALSE(f.hasState("*q0"));
     ASSERT_FALSE(f.hasState("*->q0"));
     ASSERT_FALSE(f.hasState("->*q0"));
-    ASSERT_EQ(f.getStates().size(), 1);
+    int size = f.getStates().size();
+    ASSERT_EQ(size, 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_TRUE(f.isInitialState("q0"));
     ASSERT_TRUE(f.isFinalState("q0"));
@@ -86,17 +91,20 @@ TEST_F(FiniteAutomataTest, addStateWithArrowAndAsterisk) {
 TEST_F(FiniteAutomataTest, addStateWithAlreadyAddedInitialState) {
     ASSERT_FALSE(f.hasState("q0"));
     f.addState("q0", FiniteAutomata::INITIAL_STATE);
-    ASSERT_EQ(f.getStates().size(), 1);
+    int size = f.getStates().size();
+    ASSERT_EQ(size, 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_THROW(f.addState("q0", FiniteAutomata::INITIAL_STATE), FiniteAutomataException);
-    ASSERT_EQ(f.getStates().size(), 1);
+    size = f.getStates().size();
+    ASSERT_EQ(size, 1);
 }
 
 TEST_F(FiniteAutomataTest, addSymbol) {
     ASSERT_FALSE(f.hasSymbol('a'));
     f.addSymbol('a');
     ASSERT_TRUE(f.hasSymbol('a'));
-    ASSERT_EQ(f.getAlphabet().size(), 2);
+    int size = f.getAlphabet().size();
+    ASSERT_EQ(size, 2);
     ASSERT_TRUE(f.getAlphabet().count('a'));
 }
 
@@ -211,6 +219,25 @@ TEST_F(FiniteAutomataTest, isEquivalentOddOdd) {
     f2.addTransition("q1", FiniteAutomata::EPSILON, "q2");
     ASSERT_TRUE(f.isEquivalent(f2));
     ASSERT_TRUE(f2.isEquivalent(f));
+}
+
+
+TEST_F(FiniteAutomataTest, isContained) {
+    f.addState("->q0");
+    f.addState("*q1");
+    f.addSymbol('a');
+    f.addTransition("q0", 'a', "q1");
+    f.addTransition("q1", 'a', "q0");
+    FiniteAutomata f2;
+    f2.addState("->q0");
+    f2.addState("*q1");
+    f2.addState("q2");
+    f2.addSymbol('a');
+    f2.addTransition("q0", 'a', "q1");
+    f2.addTransition("q1", 'a', "q0");
+    f2.addTransition("q1", FiniteAutomata::EPSILON, "q2");
+    ASSERT_TRUE(f.isContained(f2));
+    ASSERT_TRUE(f2.isContained(f));
 }
 
 TEST_F(FiniteAutomataTest, hasTransition) {
@@ -744,7 +771,8 @@ TEST_F(FiniteAutomataTest, toASCIITable) {
     f.addSymbol('a');
     f.addTransition("q0", 'a', "q1");
     f.addTransition("q1", 'a', "q2");
-    ASSERT_GT(f.toASCIITable().length(), 0);
+    int size = f.toASCIITable().length();
+    ASSERT_GT(size, 0);
 }
 
 TEST_F(FiniteAutomataTest, generates) {

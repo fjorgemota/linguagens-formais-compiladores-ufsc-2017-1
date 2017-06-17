@@ -245,10 +245,20 @@ public:
      * passed into the parameter
      *
      * @param  other The other automata to compare with this automata
-     * @return       true if this automata is equivalent to the parameter passed
+     * @return       true if this automata is equivalent to the automata passed
      * into the parameter
      */
     bool isEquivalent(FiniteAutomata other) const;
+
+    /*!
+     * Return if this automata is contained in the finite automata passed
+     * into the parameter
+     *
+     * @param  other The other automata to compare with this automata
+     * @return       true if this automata is contained in the automata passed
+     * into the parameter
+     */
+    bool isContained(FiniteAutomata other) const;
 
     /*!
      * Check if a state is final in the Finite Automata

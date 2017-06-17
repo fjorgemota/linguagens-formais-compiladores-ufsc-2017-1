@@ -227,8 +227,11 @@ bool FiniteAutomata::isEmpty() const {
 }
 
 bool FiniteAutomata::isEquivalent(FiniteAutomata other) const {
-    return doIntersection(other.doComplement()).isEmpty() &&
-            other.doIntersection(doComplement()).isEmpty();
+    return isContained(other) && other.isContained(*this);
+}
+
+bool FiniteAutomata::isContained(FiniteAutomata other) const {
+    return doIntersection(other.doComplement()).isEmpty();
 }
 
 bool FiniteAutomata::hasTransition(string source, char symbol, string target) {
