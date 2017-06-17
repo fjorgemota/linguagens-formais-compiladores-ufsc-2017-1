@@ -69,7 +69,7 @@ matrix:
           packages:
             - clang-3.6
       env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6 && COV=llvm-cov-3.6 && LD_FLAGS=--coverage"
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6 && COV=llvm-cov-3.6"
 
     # works on Precise and Trusty
     - os: linux
@@ -81,7 +81,7 @@ matrix:
           packages:
             - clang-3.7
       env:
-        - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7 && COV=llvm-cov-3.7 && LD_FLAGS=--coverage"
+        - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7 && COV=llvm-cov-3.7"
 
     # works on Precise and Trusty
     - os: linux
@@ -93,7 +93,7 @@ matrix:
           packages:
             - clang-3.8
       env:
-        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8 && COV=llvm-cov-3.8 && LD_FLAGS=--coverage"
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8 && COV=llvm-cov-3.8"
 
     # works on Trusty
     - os: linux
@@ -105,7 +105,7 @@ matrix:
           packages:
             - clang-3.9
       env:
-        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9 && COV=llvm-cov-3.9 && LD_FLAGS=--coverage"
+        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9 && COV=llvm-cov-3.9"
 
     # works on Trusty
     - os: linux
@@ -117,7 +117,7 @@ matrix:
           packages:
             - clang-4.0
       env:
-        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && COV=llvm-cov-4.0 && LD_FLAGS=--coverage"
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && COV=llvm-cov-4.0"
 
     # works on Trusty
     - os: linux
@@ -129,7 +129,7 @@ matrix:
           packages:
             - clang-5.0
       env:
-        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && COV=llvm-cov-5.0 && LD_FLAGS=--coverage"
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && COV=llvm-cov-5.0"
 cache:
   directories:
     - "tests/deps"
@@ -139,7 +139,6 @@ script:
     - export COV
     - export CC
     - export CXX
-    - export LD_FLAGS
     - cd tests && make test
 notifications:
   email: false
