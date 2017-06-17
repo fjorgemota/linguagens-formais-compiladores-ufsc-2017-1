@@ -13,7 +13,7 @@ GTEST_PATH := $(DEPS_PATH)/googletest
 LCOV_PATH := $(shell which lcov)
 test: build-tests run-tests clean-tests
 debug-test: build-tests debug-tests clean-tests
-get-deps: 
+get-deps:
 	mkdir -p $(DEPS_PATH); \
 	if [ ! -d "$(GTEST_PATH)" ]; then \
 		git clone --depth 1 -b release-1.8.0 https://github.com/google/googletest.git $(GTEST_PATH) && cd $(GTEST_PATH)/googletest && cmake . && make && cd -; \
@@ -21,7 +21,7 @@ get-deps:
 build-tests: get-deps
 	for FILE in $(FILES); do\
 		TEST_FILE="`echo $$FILE | sed 's/_test//'`";\
-		$(CXX) -o $(BUILD_DIR)/$$FILE $$FILE.cpp $(GTEST_PATH)/googletest/libgtest.a -I $(GTEST_PATH)/googletest/include/ -lpthread -g -Wall -I.. ../$$TEST_FILE.cpp -DEXCLUDE_QT -std=c++11  -fprofile-arcs -ftest-coverage; \
+		$(CXX) -o $(BUILD_DIR)/$$FILE $$FILE.cpp $(GTEST_PATH)/googletest/libgtest.a -I $(GTEST_PATH)/googletest/include/ -lpthread -g -Wall -I.. ../$$TEST_FILE.cpp -DEXCLUDE_QT -std=c++11  -fprofile-arcs -ftest-coverage $(LDFLAGS); \
 	done;
 run-tests:
 	mkdir -p ../coverage; \
