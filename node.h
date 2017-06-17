@@ -16,6 +16,7 @@ class NodeAction {
     NodeAction(Node* n, Direction d);
     Node *getNode();
     Direction getDirection();
+    bool operator<(const NodeAction &act) const;
 
   private:
     Direction direction;

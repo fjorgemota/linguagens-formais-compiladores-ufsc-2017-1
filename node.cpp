@@ -13,6 +13,11 @@ Direction NodeAction::getDirection() {
     return this->direction;
 }
 
+bool NodeAction::operator<(const NodeAction &act) const {
+    return direction < act.direction ||
+        (direction == act.direction && node < act.node);
+}
+
 Node::Node(char v, Node *root) : left(0), right(0), root(root), value(v) {}
 
 Node* Node::getLeft() {
