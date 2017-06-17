@@ -21,7 +21,7 @@ get-deps:
 build-tests: get-deps
 	for FILE in $(FILES); do\
 		TEST_FILE="`echo $$FILE | sed 's/_test//'`";\
-		$(CXX) -o $(BUILD_DIR)/$$FILE $$FILE.cpp $(GTEST_PATH)/googletest/libgtest.a -I $(GTEST_PATH)/googletest/include/ -lpthread -g -Wall -I.. ../$$TEST_FILE.cpp -DEXCLUDE_QT -std=c++11  -fprofile-arcs -ftest-coverage $(LDFLAGS); \
+		$(CXX) -o $(BUILD_DIR)/$$FILE $$FILE.cpp $(GTEST_PATH)/googletest/libgtest.a -I $(GTEST_PATH)/googletest/include/ -lpthread -g -Wall -I.. ../$$TEST_FILE.cpp -DEXCLUDE_QT -std=c++11  -fprofile-arcs -ftest-coverage --coverage; \
 	done;
 run-tests:
 	mkdir -p ../coverage; \
