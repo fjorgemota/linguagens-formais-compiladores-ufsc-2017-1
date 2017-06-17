@@ -21,32 +21,6 @@ class RegularExpressionTest : public testing::Test {
         RegularExpression *re;
 };
 
-TEST_F(RegularExpressionTest, getLessPriority) {
-    string r = "(a|b)*";
-    ASSERT_EQ(re->getLessPriority(r), 5);
-
-    r = "(a.b|a.c)*.a?|(b.a?.c)*";
-    ASSERT_EQ(re->getLessPriority(r), 13);
-
-    r = "1?.1?(0?.0.1.1?)*.0?.0?";
-    ASSERT_EQ(re->getLessPriority(r), 2);
-
-    r = "b?.(a|b.c)*";
-    ASSERT_EQ(re->getLessPriority(r), 2);
-
-    r = "(a.b|a.c)*.a";
-    ASSERT_EQ(re->getLessPriority(r), 10);
-
-    r = "1?.(0.1)*.0?";
-    ASSERT_EQ(re->getLessPriority(r), 2);
-
-    r = "1?.1?.(0.0?.1.1?)*.0?.0?";
-    ASSERT_EQ(re->getLessPriority(r), 2);
-
-    r = "(1|0)?.((1.0)*.(0.1)*)*.(1|0)?";
-    ASSERT_EQ(re->getLessPriority(r), 6);
-}
-
 TEST_F(RegularExpressionTest, getTreeSimple) {
     re = new RegularExpression("(a|b)*");
     Node* tree = re->getTree();
@@ -381,4 +355,174 @@ TEST_F(RegularExpressionTest, getTreeEmpty) {
 
     Node *tree = re->getTree();
     ASSERT_EQ(tree->getType(), LAMBDA);
+}
+
+TEST_F(RegularExpressionTest, getAutomataSimple) {
+    re = new RegularExpression("(a|bc)*");
+
+    FiniteAutomata f = re->getAutomata();
+
+    ASSERT_TRUE(f.hasState("q0"));
+    ASSERT_TRUE(f.isFinalState("q0"));
+    ASSERT_TRUE(f.hasState("q1"));
+    ASSERT_TRUE(f.hasTransition("q0", 'a', "q0"));
+    ASSERT_TRUE(f.hasTransition("q0", 'b', "q1"));
+    ASSERT_TRUE(f.hasTransition("q1", 'c', "q0"));
+}
+
+TEST_F(RegularExpressionTest, getAutomata6a) {
+    re = new RegularExpression("(ab|ac)*a?|(ba?c)*");
+
+    FiniteAutomata f = re->getAutomata();
+
+    ASSERT_TRUE(f.hasState("q0"));
+    ASSERT_TRUE(f.hasState("q1"));
+    ASSERT_TRUE(f.hasState("q2"));
+    ASSERT_TRUE(f.hasState("q3"));
+    ASSERT_TRUE(f.hasState("q4"));
+    ASSERT_TRUE(f.hasState("q5"));
+
+    ASSERT_TRUE(f.isFinalState("q0"));
+    ASSERT_TRUE(f.isFinalState("q1"));
+    ASSERT_TRUE(f.isFinalState("q3"));
+    ASSERT_TRUE(f.isFinalState("q5"));
+
+    ASSERT_TRUE(f.hasTransition("q0", 'a', "q1"));
+    ASSERT_TRUE(f.hasTransition("q0", 'b', "q2"));
+    ASSERT_TRUE(f.hasTransition("q1", 'b', "q3"));
+    ASSERT_TRUE(f.hasTransition("q1", 'c', "q3"));
+    ASSERT_TRUE(f.hasTransition("q2", 'a', "q4"));
+    ASSERT_TRUE(f.hasTransition("q2", 'c', "q5"));
+    ASSERT_TRUE(f.hasTransition("q3", 'a', "q1"));
+    ASSERT_TRUE(f.hasTransition("q4", 'c', "q5"));
+    ASSERT_TRUE(f.hasTransition("q5", 'b', "q2"));
+}
+
+TEST_F(RegularExpressionTest, getAutomata6c) {
+    re = new RegularExpression("1?1?(0?011?)*0?0?");
+
+    FiniteAutomata f = re->getAutomata();
+
+    ASSERT_TRUE(f.hasState("q0"));
+    ASSERT_TRUE(f.hasState("q1"));
+    ASSERT_TRUE(f.hasState("q2"));
+    ASSERT_TRUE(f.hasState("q3"));
+    ASSERT_TRUE(f.hasState("q4"));
+    ASSERT_TRUE(f.hasState("q5"));
+
+    ASSERT_TRUE(f.isFinalState("q0"));
+    ASSERT_TRUE(f.isFinalState("q1"));
+    ASSERT_TRUE(f.isFinalState("q2"));
+    ASSERT_TRUE(f.isFinalState("q3"));
+    ASSERT_TRUE(f.isFinalState("q4"));
+    ASSERT_TRUE(f.isFinalState("q5"));
+
+    ASSERT_TRUE(f.hasTransition("q0", '0', "q1"));
+    ASSERT_TRUE(f.hasTransition("q0", '1', "q2"));
+    ASSERT_TRUE(f.hasTransition("q1", '0', "q3"));
+    ASSERT_TRUE(f.hasTransition("q1", '1', "q4"));
+    ASSERT_TRUE(f.hasTransition("q2", '0', "q1"));
+    ASSERT_TRUE(f.hasTransition("q2", '1', "q5"));
+    ASSERT_TRUE(f.hasTransition("q3", '1', "q4"));
+    ASSERT_TRUE(f.hasTransition("q4", '0', "q1"));
+    ASSERT_TRUE(f.hasTransition("q4", '1', "q5"));
+    ASSERT_TRUE(f.hasTransition("q5", '0', "q1"));
+}
+
+TEST_F(RegularExpressionTest, getAutomataEquivalence12a) {
+    re = new RegularExpression("1?(01)*0?");
+    FiniteAutomata f1 = re->getAutomata();
+
+    re = new RegularExpression("0?(10)*1?");
+    FiniteAutomata f2 = re->getAutomata();
+
+    ASSERT_TRUE(f1.hasState("q0"));
+    ASSERT_TRUE(f1.hasState("q1"));
+    ASSERT_TRUE(f1.hasState("q2"));
+
+    ASSERT_TRUE(f1.isFinalState("q0"));
+    ASSERT_TRUE(f1.isFinalState("q1"));
+    ASSERT_TRUE(f1.isFinalState("q2"));
+
+    ASSERT_TRUE(f1.hasTransition("q0", '0', "q1"));
+    ASSERT_TRUE(f1.hasTransition("q0", '1', "q2"));
+    ASSERT_TRUE(f1.hasTransition("q1", '1', "q2"));
+    ASSERT_TRUE(f1.hasTransition("q2", '0', "q1"));
+
+    ASSERT_TRUE(f2.hasState("q0"));
+    ASSERT_TRUE(f2.hasState("q1"));
+    ASSERT_TRUE(f2.hasState("q2"));
+
+    ASSERT_TRUE(f2.isFinalState("q0"));
+    ASSERT_TRUE(f2.isFinalState("q1"));
+    ASSERT_TRUE(f2.isFinalState("q2"));
+
+    ASSERT_TRUE(f2.hasTransition("q0", '0', "q1"));
+    ASSERT_TRUE(f2.hasTransition("q0", '1', "q2"));
+    ASSERT_TRUE(f2.hasTransition("q1", '1', "q2"));
+    ASSERT_TRUE(f2.hasTransition("q2", '0', "q1"));
+
+    ASSERT_TRUE(f1.isEquivalent(f2));
+    ASSERT_TRUE(f2.isEquivalent(f1));
+}
+
+TEST_F(RegularExpressionTest, getAutomataEquivalence12b) {
+    re = new RegularExpression("1?1?(00?11?)*0?0?");
+    FiniteAutomata f1 = re->getAutomata();
+
+    re = new RegularExpression("(1|0)?((10)*(01)*)*(1|0)?");
+    FiniteAutomata f2 = re->getAutomata();
+
+    ASSERT_TRUE(f1.hasState("q0"));
+    ASSERT_TRUE(f1.hasState("q1"));
+    ASSERT_TRUE(f1.hasState("q2"));
+    ASSERT_TRUE(f1.hasState("q3"));
+    ASSERT_TRUE(f1.hasState("q4"));
+    ASSERT_TRUE(f1.hasState("q5"));
+
+    ASSERT_TRUE(f1.isFinalState("q0"));
+    ASSERT_TRUE(f1.isFinalState("q1"));
+    ASSERT_TRUE(f1.isFinalState("q2"));
+    ASSERT_TRUE(f1.isFinalState("q3"));
+    ASSERT_TRUE(f1.isFinalState("q4"));
+    ASSERT_TRUE(f1.isFinalState("q5"));
+
+    ASSERT_TRUE(f1.hasTransition("q0", '0', "q1"));
+    ASSERT_TRUE(f1.hasTransition("q0", '1', "q2"));
+    ASSERT_TRUE(f1.hasTransition("q1", '0', "q3"));
+    ASSERT_TRUE(f1.hasTransition("q1", '1', "q4"));
+    ASSERT_TRUE(f1.hasTransition("q2", '0', "q1"));
+    ASSERT_TRUE(f1.hasTransition("q2", '1', "q5"));
+    ASSERT_TRUE(f1.hasTransition("q3", '1', "q4"));
+    ASSERT_TRUE(f1.hasTransition("q4", '0', "q1"));
+    ASSERT_TRUE(f1.hasTransition("q4", '1', "q5"));
+    ASSERT_TRUE(f1.hasTransition("q5", '0', "q1"));
+
+    ASSERT_TRUE(f2.hasState("q0"));
+    ASSERT_TRUE(f2.hasState("q1"));
+    ASSERT_TRUE(f2.hasState("q2"));
+    ASSERT_TRUE(f2.hasState("q3"));
+    ASSERT_TRUE(f2.hasState("q4"));
+    ASSERT_TRUE(f2.hasState("q5"));
+
+    ASSERT_TRUE(f2.isFinalState("q0"));
+    ASSERT_TRUE(f2.isFinalState("q1"));
+    ASSERT_TRUE(f2.isFinalState("q2"));
+    ASSERT_TRUE(f2.isFinalState("q3"));
+    ASSERT_TRUE(f2.isFinalState("q4"));
+    ASSERT_TRUE(f2.isFinalState("q5"));
+
+    ASSERT_TRUE(f2.hasTransition("q0", '0', "q1"));
+    ASSERT_TRUE(f2.hasTransition("q0", '1', "q2"));
+    ASSERT_TRUE(f2.hasTransition("q1", '0', "q3"));
+    ASSERT_TRUE(f2.hasTransition("q1", '1', "q2"));
+    ASSERT_TRUE(f2.hasTransition("q2", '0', "q1"));
+    ASSERT_TRUE(f2.hasTransition("q2", '1', "q4"));
+    ASSERT_TRUE(f2.hasTransition("q3", '1', "q5"));
+    ASSERT_TRUE(f2.hasTransition("q4", '0', "q5"));
+    ASSERT_TRUE(f2.hasTransition("q5", '0', "q3"));
+    ASSERT_TRUE(f2.hasTransition("q5", '1', "q4"));
+
+    ASSERT_FALSE(f1.isEquivalent(f2));
+    ASSERT_FALSE(f2.isEquivalent(f1));
 }
