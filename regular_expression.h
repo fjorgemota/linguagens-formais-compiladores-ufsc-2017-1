@@ -4,13 +4,18 @@
 
 using namespace std;
 
+class RegularExpressionException : public runtime_error {
+  public:
+    using runtime_error::runtime_error;
+};
+
 class RegularExpression {
   public:
     RegularExpression(string re);
     int getLessPriority(string re);
     string normalize();
     Node* getTree();
-    FiniteAutomata getAutomata(Node* tree);
+    FiniteAutomata getAutomata();
 
   private:
     Node* getNode(char c, Node *root);

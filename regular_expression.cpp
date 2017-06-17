@@ -157,7 +157,6 @@ Node* RegularExpression::getTree(string re, Node *parent) {
 
 map<Node*, set<Node*>> RegularExpression::getCompositionPerLeaf(Node* tree) {
     map<Node*, set<Node*>> table;
-    set<Node*> achievable;
     list<NodeAction> to_process;
     Node *leaf;
     queue<Node*> leaves;
@@ -177,11 +176,12 @@ map<Node*, set<Node*>> RegularExpression::getCompositionPerLeaf(Node* tree) {
             nodes.push_back(root->getLeft());
         }
         if (root->getRight()) {
-            nodes.push_back(root->getLeft());
+            nodes.push_back(root->getRight());
         }
     }
 
     while(!leaves.empty()) {
+        set<Node*> achievable;
         leaf = leaves.front();
         leaves.pop();
         to_process = leaf->ascend();
@@ -212,7 +212,6 @@ map<Node*, set<Node*>> RegularExpression::getCompositionPerLeaf(Node* tree) {
 
 set<Node*> RegularExpression::getFirstComposition(Node* tree) {
     Node *root = tree;
-    map<Node*, set<Node*>> table = getCompositionPerLeaf(root);
     set<Node*> composition;
 
     list<NodeAction> to_process = root->descend();
@@ -256,7 +255,8 @@ bool RegularExpression::hasLambda(set<Node*> composition) {
     return false;
 }
 
-FiniteAutomata RegularExpression::getAutomata(Node *tree) {
+FiniteAutomata RegularExpression::getAutomata() {
+    Node *tree = getTree();
     map<Node*, set<Node*>> compositions = getCompositionPerLeaf(tree);
     set<Node*> first_composition = getFirstComposition(tree);
 
