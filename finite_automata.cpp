@@ -187,6 +187,49 @@ bool FiniteAutomata::hasSymbol(char symbol) const {
     return alphabet.count(symbol);
 }
 
+set<string> FiniteAutomata::getStates() const {
+    return states;
+}
+
+set<char> FiniteAutomata::getAlphabet() const {
+    return alphabet;
+}
+
+bool FiniteAutomata::isEmpty() const {
+    set<string> newStates;
+    queue<string> q;
+    for (string state: final_states) {
+        q.push(state);
+    }
+    while (!q.empty()) {
+        string state = q.front();
+        q.pop();
+        if (state == initial_state) {
+            return false;
+        }
+        newStates.insert(state);
+        for (string fromState: states) {
+            if (!transitions.count(fromState)) {
+                continue;
+            }
+            for (char symbol: alphabet) {
+                if (!transitions.at(fromState).count(symbol)) {
+                    continue;
+                }
+                if (transitions.at(fromState).at(symbol).count(state) &&
+                    !newStates.count(fromState)) {
+                    q.push(fromState);
+                }
+            }
+        }
+    }
+    return true;
+}
+
+bool FiniteAutomata::isEquivalent(FiniteAutomata other) const {
+    return doIntersection(other.doComplement()).isEmpty() &&
+            other.doIntersection(doComplement()).isEmpty();
+}
 
 bool FiniteAutomata::hasTransition(string source, char symbol, string target) {
     if (!hasState(source) || !hasState(target) || !hasSymbol(symbol)) {

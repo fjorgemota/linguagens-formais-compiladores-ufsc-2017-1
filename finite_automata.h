@@ -219,6 +219,38 @@ public:
     bool hasSymbol(char symbol) const;
 
     /*!
+     * Return the set of states of this finite automata
+     *
+     * @return The set of states of this finite automata
+     */
+    set<string> getStates() const;
+
+    /*!
+     * Return the set of symbols of the alphabet of this finite automata
+     *
+     * @return The set of symbols of the alphabet of this finite automata
+     */
+    set<char> getAlphabet() const;
+
+    /*!
+     * Return if this finite automata is empty, or, in other words, if it
+     * has final states
+     *
+     * @return true if the finite automata is empty, false otherwise
+     */
+    bool isEmpty() const;
+
+    /*!
+     * Return if this finite automata is equivalent to the finite automata
+     * passed into the parameter
+     *
+     * @param  other The other automata to compare with this automata
+     * @return       true if this automata is equivalent to the parameter passed
+     * into the parameter
+     */
+    bool isEquivalent(FiniteAutomata other) const;
+
+    /*!
      * Check if a state is final in the Finite Automata
      *
      * @param state The state to check if it is final

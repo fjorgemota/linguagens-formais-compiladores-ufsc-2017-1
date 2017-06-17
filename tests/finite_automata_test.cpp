@@ -18,6 +18,7 @@ class FiniteAutomataTest : public testing::Test {
 TEST_F(FiniteAutomataTest, addState) {
     ASSERT_FALSE(f.hasState("q0"));
     f.addState("q0");
+    ASSERT_EQ(f.getStates().size(), 1);
     ASSERT_TRUE(f.hasState("q0"));
 }
 
@@ -28,6 +29,7 @@ TEST_F(FiniteAutomataTest, addStateWithArrow) {
     ASSERT_FALSE(f.isInitialState("q0"));
     f.addState("->q0");
     ASSERT_FALSE(f.hasState("->q0"));
+    ASSERT_EQ(f.getStates().size(), 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_TRUE(f.isInitialState("q0"));
 }
@@ -38,6 +40,7 @@ TEST_F(FiniteAutomataTest, addStateWithAsterisk) {
     ASSERT_FALSE(f.isFinalState("q0"));
     f.addState("*q0");
     ASSERT_FALSE(f.hasState("*q0"));
+    ASSERT_EQ(f.getStates().size(), 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_TRUE(f.isFinalState("q0"));
 }
@@ -55,6 +58,7 @@ TEST_F(FiniteAutomataTest, addStateWithAsteriskAndArrow) {
     ASSERT_FALSE(f.hasState("*q0"));
     ASSERT_FALSE(f.hasState("*->q0"));
     ASSERT_FALSE(f.hasState("->*q0"));
+    ASSERT_EQ(f.getStates().size(), 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_TRUE(f.isInitialState("q0"));
     ASSERT_TRUE(f.isFinalState("q0"));
@@ -73,6 +77,7 @@ TEST_F(FiniteAutomataTest, addStateWithArrowAndAsterisk) {
     ASSERT_FALSE(f.hasState("*q0"));
     ASSERT_FALSE(f.hasState("*->q0"));
     ASSERT_FALSE(f.hasState("->*q0"));
+    ASSERT_EQ(f.getStates().size(), 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_TRUE(f.isInitialState("q0"));
     ASSERT_TRUE(f.isFinalState("q0"));
@@ -81,14 +86,18 @@ TEST_F(FiniteAutomataTest, addStateWithArrowAndAsterisk) {
 TEST_F(FiniteAutomataTest, addStateWithAlreadyAddedInitialState) {
     ASSERT_FALSE(f.hasState("q0"));
     f.addState("q0", FiniteAutomata::INITIAL_STATE);
+    ASSERT_EQ(f.getStates().size(), 1);
     ASSERT_TRUE(f.hasState("q0"));
     ASSERT_THROW(f.addState("q0", FiniteAutomata::INITIAL_STATE), FiniteAutomataException);
+    ASSERT_EQ(f.getStates().size(), 1);
 }
 
 TEST_F(FiniteAutomataTest, addSymbol) {
     ASSERT_FALSE(f.hasSymbol('a'));
     f.addSymbol('a');
     ASSERT_TRUE(f.hasSymbol('a'));
+    ASSERT_EQ(f.getAlphabet().size(), 2);
+    ASSERT_TRUE(f.getAlphabet().count('a'));
 }
 
 TEST_F(FiniteAutomataTest, addSymbolOutOfRange) {
@@ -147,6 +156,62 @@ TEST_F(FiniteAutomataTest, isFinalState) {
     ASSERT_TRUE(f.isFinalState("q2"));
 }
 
+TEST_F(FiniteAutomataTest, isEmpty) {
+    f.addSymbol('a');
+    f.addState("->q0");
+    f.addState("*q1");
+    ASSERT_TRUE(f.isEmpty());
+    f.addTransition("q0", 'a', "q1");
+    ASSERT_FALSE(f.isEmpty());
+}
+
+TEST_F(FiniteAutomataTest, isEmptyEpsilon) {
+    f.addState("->q0");
+    f.addState("*q1");
+    ASSERT_TRUE(f.isEmpty());
+    f.addTransition("q0", FiniteAutomata::EPSILON, "q1");
+    ASSERT_FALSE(f.isEmpty());
+}
+
+TEST_F(FiniteAutomataTest, isEmptyInitial) {
+    f.addState("*->q0");
+    ASSERT_FALSE(f.isEmpty());
+}
+
+TEST_F(FiniteAutomataTest, isEquivalentOddEven) {
+    f.addState("->q0");
+    f.addState("*q1");
+    f.addSymbol('a');
+    f.addTransition("q0", 'a', "q1");
+    f.addTransition("q1", 'a', "q0");
+    FiniteAutomata f2;
+    f2.addState("*->q0");
+    f2.addState("q1");
+    f2.addSymbol('a');
+    f2.addTransition("q0", 'a', "q1");
+    f2.addTransition("q1", 'a', "q0");
+    ASSERT_FALSE(f.isEquivalent(f2));
+    ASSERT_FALSE(f2.isEquivalent(f));
+}
+
+
+TEST_F(FiniteAutomataTest, isEquivalentOddOdd) {
+    f.addState("->q0");
+    f.addState("*q1");
+    f.addSymbol('a');
+    f.addTransition("q0", 'a', "q1");
+    f.addTransition("q1", 'a', "q0");
+    FiniteAutomata f2;
+    f2.addState("->q0");
+    f2.addState("*q1");
+    f2.addState("q2");
+    f2.addSymbol('a');
+    f2.addTransition("q0", 'a', "q1");
+    f2.addTransition("q1", 'a', "q0");
+    f2.addTransition("q1", FiniteAutomata::EPSILON, "q2");
+    ASSERT_TRUE(f.isEquivalent(f2));
+    ASSERT_TRUE(f2.isEquivalent(f));
+}
 
 TEST_F(FiniteAutomataTest, hasTransition) {
     ASSERT_FALSE(f.hasTransition("q0", 'a', "q1"));
@@ -192,7 +257,6 @@ TEST_F(FiniteAutomataTest, determinizeEpsilonLoop) {
     ASSERT_FALSE(f.isDeterministic());
     f = f.determinize();
     ASSERT_TRUE(f.isDeterministic());
-    cout << f.toASCIITable() << endl;
     ASSERT_TRUE(f.hasState("[q0,q1,q2]"));
     ASSERT_TRUE(f.hasState("[q3]"));
     ASSERT_TRUE(f.hasTransition("[q0,q1,q2]", 'a', "[q3]"));
