@@ -163,7 +163,7 @@ class RegularExpression {
      * @return The list of leaves (or lambda, if reachable) reachables while
      *         walking on the tree
      */
-    set<Node*> getLeaves(list<NodeAction> to_process)
+    set<Node*> getLeaves(list<NodeAction> to_process);
 
     string regex; //!< The regular expression specified by the user
 };
