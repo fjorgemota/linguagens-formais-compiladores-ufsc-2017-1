@@ -132,7 +132,8 @@ Node* RegularExpression::getTree(string re, Node *parent) {
     int less_prior_position = getLessPriority(re);
 
     int size = re.size();
-    while (less_prior_position == -1 && !(re.empty()) && re[0] == '(' && re[size-1] == ')') {
+    while (less_prior_position == -1 && !(re.empty()) && re[0] == '(' &&
+            re[size-1] == ')') {
         re = re.substr(1, size-2);
         size = re.size();
         less_prior_position = getLessPriority(re);
@@ -155,6 +156,34 @@ Node* RegularExpression::getTree(string re, Node *parent) {
     root->setRight(right_child);
 
     return root;
+}
+
+set<Node*> RegularExpression::getLeaves(list<NodeAction> to_process) {
+    set<Node*> composition;
+    set<NodeAction> visited;
+    while(!to_process.empty()) {
+        NodeAction child = to_process.back();
+        to_process.pop_back();
+        if (visited.count(child)) {
+            continue;
+        }
+        visited.insert(child);
+        Node *root = child.getNode();
+
+        if (root->getType() == LEAF || root->getType() == LAMBDA) {
+            composition.insert(root);
+        } else if (child.getDirection() == up) {
+            auto it = to_process.begin();
+            auto ascend = root->ascend();
+            to_process.insert(it, ascend.begin(), ascend.end());
+        } else if (child.getDirection() == down) {
+            auto it = to_process.begin();
+            auto descend = root->descend();
+            to_process.insert(it, descend.begin(), descend.end());
+        }
+    }
+
+    return composition;
 }
 
 map<Node*, set<Node*>> RegularExpression::getCompositionPerLeaf(Node* tree) {
@@ -187,25 +216,7 @@ map<Node*, set<Node*>> RegularExpression::getCompositionPerLeaf(Node* tree) {
         leaf = leaves.front();
         leaves.pop();
         to_process = leaf->ascend();
-
-        while (!to_process.empty()) {
-            NodeAction child = to_process.back();
-            to_process.pop_back();
-            root = child.getNode();
-
-            if (root->getType() == LEAF || root->getType() == LAMBDA) {
-                achievable.insert(root);
-            } else if (child.getDirection() == up) {
-                auto it = to_process.begin();
-                auto ascend = root->ascend();
-                to_process.insert(it, ascend.begin(), ascend.end());
-            } else if (child.getDirection() == down) {
-                auto it = to_process.begin();
-                auto descend = root->descend();
-                to_process.insert(it, descend.begin(), descend.end());
-            }
-        }
-
+        achievable = getLeaves(to_process);
         table[leaf] = achievable;
     }
 
@@ -214,29 +225,9 @@ map<Node*, set<Node*>> RegularExpression::getCompositionPerLeaf(Node* tree) {
 
 set<Node*> RegularExpression::getFirstComposition(Node* tree) {
     Node *root = tree;
-    set<Node*> composition;
-
     list<NodeAction> to_process = root->descend();
 
-    while(!to_process.empty()) {
-        NodeAction child = to_process.back();
-        to_process.pop_back();
-        root = child.getNode();
-
-        if (root->getType() == LEAF || root->getType() == LAMBDA) {
-            composition.insert(root);
-        } else if (child.getDirection() == up) {
-            auto it = to_process.begin();
-            auto ascend = root->ascend();
-            to_process.insert(it, ascend.begin(), ascend.end());
-        } else if (child.getDirection() == down) {
-            auto it = to_process.begin();
-            auto descend = root->descend();
-            to_process.insert(it, descend.begin(), descend.end());
-        }
-    }
-
-    return composition;
+    return getLeaves(to_process);
 }
 
 set<char> RegularExpression::getAlphabet(map<Node*, set<Node*>> leaves_comp) {
