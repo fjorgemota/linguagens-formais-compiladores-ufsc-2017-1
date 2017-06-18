@@ -216,6 +216,7 @@ void FiniteAutomataTable::validateStates() {
             warn(item, "State cannot be empty");
             continue;
         }
+        warn(item, "");
         result[state].insert(item);
     }
     for (auto item: result){
