@@ -4,8 +4,6 @@
 #include "node.h"
 #include "finite_automata.h"
 
-using namespace std;
-
 /*!
  * Class used to represent a Regular Expression
  */
@@ -17,6 +15,14 @@ class RegularExpression {
      * @param  re The regular expression to use in the creation of the string
      */
     RegularExpression(string re);
+
+    /*!
+     * Get the regular expression constructed
+     *
+     * @return The regular expression string defined in the constructor of
+     * the class
+     */
+    string getRegularExpression();
 
     /*!
      * Computes the De Simone tree related to this regular expression
