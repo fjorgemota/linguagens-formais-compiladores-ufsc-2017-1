@@ -28,13 +28,17 @@ SOURCES += main.cpp\
     finite_automata.cpp \
     regular_expression.cpp \
     node.cpp \
-    finite_automata_table.cpp
+    finite_automata_table.cpp \
+    regular_expression_highlighter.cpp \
+    regular_expression_input.cpp
 
 HEADERS  += mainwindow.h \
     finite_automata.h \
     regular_expression.h \
     node.h \
-    finite_automata_table.h
+    finite_automata_table.h \
+    regular_expression_highlighter.h \
+    regular_expression_input.h
 
 FORMS    += mainwindow.ui
 
