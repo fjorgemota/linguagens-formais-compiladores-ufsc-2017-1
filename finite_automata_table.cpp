@@ -126,12 +126,14 @@ void FiniteAutomataTable::validateTransitions() {
 }
 
 void FiniteAutomataTable::warn(QTableWidgetItem *cell, string message) {
+    this->blockSignals(true);
     if (message.empty()) {
         cell->setBackgroundColor(QColor("white"));
     } else {
         cell->setBackgroundColor(QColor("yellow"));
     }
     cell->setStatusTip(message.c_str());
+    this->blockSignals(false);
 }
 
 set<string> FiniteAutomataTable::getStates() {
