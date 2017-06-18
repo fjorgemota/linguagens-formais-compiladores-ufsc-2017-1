@@ -803,7 +803,7 @@ set<string> FiniteAutomata::getClosure(string state) const {
     return results;
 }
 
-string FiniteAutomata::formatStates(set<string> states, bool brackets) const {
+string FiniteAutomata::formatStates(set<string> states, bool brackets) {
     string s;
     if (brackets) {
         s = "[";

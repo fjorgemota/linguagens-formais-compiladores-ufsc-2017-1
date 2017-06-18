@@ -3,6 +3,9 @@
 
 #include "all.h"
 
+#include <QMainWindow>
+#include <QApplication>
+
 namespace Ui {
 class MainWindow;
 }

@@ -421,6 +421,18 @@ public:
      */
     FiniteAutomataGenerator generates();
 
+
+    /*!
+     * Return a string representing a set of states, allowing the user to put
+     * it into brackets or not
+     *
+     * @param  states   The set of states to represent
+     * @param  brackets If the representation should have a bracket or not
+     * @return          The representation of the set of states
+     */
+    static string formatStates(set<string> states, bool brackets=true);
+
+
     const static int FINAL_STATE; //!< Constant used to represent a final state
     const static int INITIAL_STATE; //!< Constant used to represent a initial state
     const static char EPSILON; //!< Constant that represent the Epsilon char
@@ -433,16 +445,6 @@ private:
      * @return          The set of the states reachable via epsilon transitions
      */
     set<string> getClosure(string state) const;
-
-    /*!
-     * Return a string representing a set of states, allowing the user to put
-     * it into brackets or not
-     *
-     * @param  states   The set of states to represent
-     * @param  brackets If the representation should have a bracket or not
-     * @return          The representation of the set of states
-     */
-    string formatStates(set<string> states, bool brackets=true) const;
 
     /*!
      * Set the new states and final states of this finite automata, deleting any
