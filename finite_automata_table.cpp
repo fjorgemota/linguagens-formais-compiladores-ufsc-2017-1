@@ -1,6 +1,8 @@
 #include "finite_automata_table.h"
 #include <QHeaderView>
 
+const QString FiniteAutomataTable::WARNING_COLOR = "yellow";
+
 FiniteAutomataTable::FiniteAutomataTable(QWidget *parent) : QTableWidget(parent)
 {
     this->setRowCount(2);
@@ -17,6 +19,25 @@ FiniteAutomataTable::FiniteAutomataTable(QWidget *parent) : QTableWidget(parent)
     delta->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     this->setItem(0, 0, delta);
     connect(this, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(insertRowOrColumn(QTableWidgetItem*)));
+}
+
+bool FiniteAutomataTable::isValid() {
+
+    int colCount = this->columnCount();
+    int rowCount = this->rowCount();
+    for (int i=0; i<rowCount; i++) {
+        for (int j=0; j < colCount; j++) {
+            QTableWidgetItem *cell = item(i, j);
+            if (!cell) {
+                continue;
+            }
+            if (cell->backgroundColor().name() == WARNING_COLOR) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 void FiniteAutomataTable::insertRowOrColumn(QTableWidgetItem * item) {
@@ -36,7 +57,7 @@ void FiniteAutomataTable::insertRowOrColumn(QTableWidgetItem * item) {
     // Validate transitions!
     if (item->row() > 0 && item->column() > 0 && item->text().size() > 1) {
         set<string> states = getStates();
-        validateState(item, states);
+        validateTransition(item, states);
         validateAlphabet();
         validateStates();
     } else if (item->column() == 0) {
@@ -48,7 +69,7 @@ void FiniteAutomataTable::insertRowOrColumn(QTableWidgetItem * item) {
     }
 }
 
-void FiniteAutomataTable::validateState(QTableWidgetItem *item, set<string> states) {
+void FiniteAutomataTable::validateTransition(QTableWidgetItem *item, set<string> states) {
     QStringList statesInput = item->text().split(",");
     if (statesInput.size() == 1 && !states.count("-")) {
         statesInput.removeAll("-");
@@ -120,7 +141,7 @@ void FiniteAutomataTable::validateTransitions() {
            if (!item) {
                continue;
            }
-           validateState(item, states);
+           validateTransition(item, states);
         }
     }
 }
@@ -130,7 +151,7 @@ void FiniteAutomataTable::warn(QTableWidgetItem *cell, string message) {
     if (message.empty()) {
         cell->setBackgroundColor(QColor("white"));
     } else {
-        cell->setBackgroundColor(QColor("yellow"));
+        cell->setBackgroundColor(QColor(WARNING_COLOR));
     }
     cell->setStatusTip(message.c_str());
     this->blockSignals(false);
