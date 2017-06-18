@@ -25,10 +25,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    finite_automata.cpp
+    finite_automata.cpp \
+    regular_expression.cpp \
+    node.cpp \
+    finite_automata_table.cpp
 
 HEADERS  += mainwindow.h \
-    finite_automata.h
+    finite_automata.h \
+    regular_expression.h \
+    node.h \
+    finite_automata_table.h
 
 FORMS    += mainwindow.ui
 
