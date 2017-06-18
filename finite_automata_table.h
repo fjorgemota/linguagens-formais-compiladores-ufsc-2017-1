@@ -120,7 +120,7 @@ private:
      */
     void fitTable();
 
-    const static QString WARNING_COLOR;
+    const static QString WARNING_COLOR; //!< The color in the background of the cells with warnings
 
 public slots:
     /*!
