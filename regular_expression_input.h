@@ -1,11 +1,47 @@
 #ifndef REGULAR_EXPRESSION_INPUT_H
 #define REGULAR_EXPRESSION_INPUT_H
 
+#include "regular_expression_highlighter.h"
+#include "regular_expression.h"
+#include <QTextEdit>
 
-class regular_expression_input
+/*!
+ * Implements a text editor for the regular expressions
+ */
+class RegularExpressionInput : public QTextEdit
 {
+    Q_OBJECT
+
 public:
-    regular_expression_input();
+    /*!
+     * Defines the window with a plain text editor, with the font type
+     * accpeted and the highlight rules
+     *
+     * @param parent A parent QTextEdit, if necessary
+     */
+    explicit RegularExpressionInput(QWidget *parent = 0);
+
+    /*!
+     * Get the regular expression in the plain text and translate
+     * to an object of the RegularExpression class
+     */
+    RegularExpression toRegularExpression();
+
+    /*!
+     * Writes the specified RegularExpression object to the plain text
+     *
+     * @param regex A RegularExpression object
+     */
+    void fromRegularExpression(RegularExpression regex);
+
+    /*!
+     * Checks the regex in the input text, returns true if each parentheses
+     * opened is properly closed
+     */
+    bool isValid();
+
+private:
+    RegularExpressionHighlighter *highlighter; //!< The rules of highlight
 };
 
 #endif // REGULAR_EXPRESSION_INPUT_H
