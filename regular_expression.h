@@ -1,3 +1,5 @@
+#ifndef REGULAR_EXPRESSION_H
+#define REGULAR_EXPRESSION_H
 #include "all.h"
 #include "node.h"
 #include "finite_automata.h"
@@ -167,3 +169,5 @@ class RegularExpression {
 
     string regex; //!< The regular expression specified by the user
 };
+
+#endif  // REGULAR_EXPRESSION_H
