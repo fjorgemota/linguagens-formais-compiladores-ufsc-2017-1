@@ -20,3 +20,7 @@ void FiniteAutomataTab::fromAutomata(FiniteAutomata &f) {
 FiniteAutomata FiniteAutomataTab::toAutomata() {
     return this->table->toAutomata();
 }
+
+bool FiniteAutomataTab::isValid() {
+    return this->table->isValid();
+}

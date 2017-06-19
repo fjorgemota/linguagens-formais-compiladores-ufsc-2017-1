@@ -26,7 +26,6 @@ void FiniteAutomataTable::setDelta() {
 }
 
 bool FiniteAutomataTable::isValid() {
-
     int colCount = this->columnCount();
     int rowCount = this->rowCount();
     for (int i=0; i<rowCount; i++) {
@@ -35,7 +34,7 @@ bool FiniteAutomataTable::isValid() {
             if (!cell) {
                 continue;
             }
-            if (cell->backgroundColor().name() == WARNING_COLOR) {
+            if (cell->backgroundColor() == QColor(WARNING_COLOR)) {
                 return false;
             }
         }

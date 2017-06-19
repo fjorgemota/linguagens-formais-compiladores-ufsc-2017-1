@@ -30,6 +30,14 @@ public:
      * Convert the data in this table to a Automata
      */
     FiniteAutomata toAutomata();
+
+    /*!
+     * Check if the automata present in this tab is
+     * valid or not
+     *
+     * \return true if it is valid, false otherwise
+     */
+    bool isValid();
 private:
     FiniteAutomataTable *table;
 };
