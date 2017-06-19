@@ -136,25 +136,20 @@ void FiniteAutomataTable::setReadWrite() {
 
 void FiniteAutomataTable::validateTransition(QTableWidgetItem *item, set<string> states) {
     QString itemText = item->text();
-    if (states.count(itemText.toStdString())) {
-        warn(item, "");
+    warn(item, "");
+    if (states.count(itemText.toStdString()) || itemText.isEmpty()) {
         return;
     }
     QStringList statesInput = itemText.split(",");
     if (statesInput.size() == 1 && !states.count("-")) {
         statesInput.removeAll("-");
     }
-    bool validated = true;
     for (QString qstate: statesInput) {
         string state = qstate.toStdString();
         if (!states.count(state)) {
-            validated = false;
             warn(item, "The state '"+state+"' is invalid");
             break;
         }
-    }
-    if (validated) {
-        warn(item, "");
     }
 }
 

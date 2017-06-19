@@ -25,7 +25,7 @@
 
 \maketitle
 
-\section*{Introdução}
+\section{Introdução}
     O software possibilita a verificação e a execução de operações relacionadas
     a autômatos finitos e expressões regulares, através de simples operações é
     possível verificar a equivalência de dois autômatos finitos, o autômato
@@ -36,9 +36,9 @@
 \section{Uso do Programa}
 \label{sec:uso}
     Ao iniciar o programa, ilustrado na figura \ref{fig:start_point}, uma
-    janela conterá duas abas, uma com a mensagem de boas-vindas e um pequeno
-    resumo de quais passos básicos seguir para a execução do software. Na tela
-    inicial do software também contém três menus na parte superior da janela:
+    janela conterá uma aba com a mensagem de boas-vindas com um pequeno resumo
+    de quais passos básicos seguir para a execução do software. Na tela inicial
+    do software também contém três menus na parte superior da janela:
     \texttt{File}, \texttt{Operations} e \texttt{Tab}, a seguir será detalhado
     mais sobre os três menus.
 
@@ -151,7 +151,7 @@
         explicitadas na classe \texttt{FiniteAutomata}. A seguir, um
         detalhamento das operações relacionadas aos autômatos finitos.
 
-        \subsection{Propriedades básicas de autômatos finitos}
+        \subsubsection{Propriedades básicas de autômatos finitos}
             O conjunto de autômatos finitos regulares são fechados a quatro
             operações: união, complemento, concatenação e interseção. Tais
             operações básicas possibilitam a realização de outras operações
@@ -178,7 +178,7 @@
                     T2 \subseteq T1$.3
             \end{itemize}
 
-        \subsection{Determinização de um autômato finito}
+        \subsubsection{Determinização de um autômato finito}
             Um autômato é dito não determinístico se ele possui pelo menos um
             estado cujas transições levam a dois estados diferentes por um
             mesmo símbolo do alfabeto. A determinização de um autômato finito
@@ -187,7 +187,7 @@
             são unidos, formando um só - tais etapas são repetidas ate que
             todas as transições do autômato finito sejam determinísticas.
 
-        \subsection{Minimização de um autômato finito}
+        \subsubsection{Minimização de um autômato finito}
             Um autômato finito é dito mínimo se ele não possui estados mortos,
             não possui estados inalcançáveis e não possui estados equivalentes,
             assim, para a minimização de um autômato qualquer as três condições
@@ -220,7 +220,7 @@
         explicitadas na classe \texttt{RegularExpression}. A seguir, as
         operações relacionadas às expressões regulares.
 
-        \subsection{Árvore associada}
+        \subsubsection{Árvore associada}
             Dada uma expressão regular, sempre é possível associá-lo a uma
             árvore binária, esta é formada a partir das operações de menor para
             maior prioridade. A árvore associada à expressão regular acaba
@@ -244,7 +244,7 @@
             subexpressões serão analisadas da mesma forma descrita antes. O
             algoritmo para quando não há mais subexpressões para analisar.
 
-        \subsection{Método de Simone}
+        \subsubsection{Método de Simone}
         \label{subsec:desimone}
             O método de Simone possibilita a transformação de uma expressão
             regular qualquer a um autômato finito associado, tal autômato
@@ -281,7 +281,7 @@
             subida ou descida), portanto, uma ação não é repetida duas vezes
             por um mesmo nó.
 
-    \subsection{Testes realizados}
+    \section{Testes realizados}
         Toda a validação das estruturas que compõem o programa foram feitas
         usando testes unitários, para isto foi utilizado o framework
         gtest\footnote{\href{https://github.com/google/googletest}{Google Test}
@@ -291,7 +291,7 @@
         conforme os métodos foram sendo criados e problemas foram encontrados.
         Além disso, um serviço denominado Travis
         CI\footnote{\href{https://travis-ci.com}{Travis CI} - Serviço de
-        integração continua} testou cada commit realizado no projeto,
+        integração contínua} testou cada commit realizado no projeto,
         compilando e realizando os testes em plataformas como o Linux e o
         macOS, de forma a garantir que problemas fossem encontrados rapidamente
         no código.
