@@ -1,9 +1,16 @@
 #ifndef REGULAR_EXPRESSION_HIGHLIGHTER_H
 #define REGULAR_EXPRESSION_HIGHLIGHTER_H
 
+#include <QChar>
+#include <QStack>
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
 #include <QTextCharFormat>
+
+struct BlockData : public QTextBlockUserData {
+    QMap<int, int> parenthesis; /**< Maps each parenthesis' position with
+                                        the position of the correspondent */
+};
 
 /*!
  * Class used to highlight operators from a regular expression

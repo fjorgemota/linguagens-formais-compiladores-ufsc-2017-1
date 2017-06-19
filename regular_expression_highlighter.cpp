@@ -39,5 +39,33 @@ void RegularExpressionHighlighter::highlightBlock(const QString &text)
             setFormat(match.capturedStart(), match.capturedLength(), rule.format);
         }
     }
+
+    BlockData *data = new BlockData;
+
+    int count_parentesis = 0;
+    int p = 0;
+    QStack<int> positions;
+    for (QChar c : text) {
+        if (c == '(') {
+            count_parentesis++;
+        }
+        if (count_parentesis <= 0) {
+            p++;
+            continue;
+        }
+
+        if (c == '(') {
+            positions.push(p);
+        } else if (c == ')') {
+            int start = positions.top();
+            positions.pop();
+            data->parenthesis[start] = p;
+            data->parenthesis[p] = start;
+            count_parentesis--;
+        }
+        p++;
+    }
+
+    setCurrentBlockUserData(data);
     setCurrentBlockState(0);
 }
