@@ -35,6 +35,12 @@ public:
      */
     void addStep(MainWindow *window, FiniteAutomata f, QString title);
 
+    /*!
+     * Add a new step to this tab
+     *
+     * @param title The text describing the step actually made
+     */
+    void addStep(QString title);
 private:
     QGridLayout *gridLayout; //!< The grid layout of this ttab
 };

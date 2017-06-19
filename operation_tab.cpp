@@ -8,7 +8,9 @@ OperationTab::OperationTab(QWidget *widget) : QWidget(widget)
 
 void OperationTab::addStep(MainWindow *window, FiniteAutomata f, QString title) {
     int rowCount = this->gridLayout->rowCount();
-    gridLayout->addWidget(new QLabel(title, this), rowCount, 0);
+    QLabel *label = new QLabel(title, this);
+    label->setWordWrap(true);
+    gridLayout->addWidget(label, rowCount, 0);
     FiniteAutomataTable *table = new FiniteAutomataTable();
     table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     table->fromAutomata(f);
@@ -25,4 +27,12 @@ void OperationTab::addStep(MainWindow *window, FiniteAutomata f, QString title) 
     gridLayout->addWidget(table, rowCount+1, 0);
     MoveToTabButton *button = new MoveToTabButton(this, window, f);
     gridLayout->addWidget(button, rowCount, 1, 2, 1);
+}
+
+
+void OperationTab::addStep(QString title) {
+    int rowCount = this->gridLayout->rowCount();
+    QLabel *label = new QLabel(title, this);
+    label->setWordWrap(true);
+    gridLayout->addWidget(label, rowCount, 0, 1, 2);
 }
