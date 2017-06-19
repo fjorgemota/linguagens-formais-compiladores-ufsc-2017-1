@@ -40,7 +40,19 @@ public:
      */
     bool isValid();
 
+private slots:
+    /*!
+     * Checks the plain text and find parentheses properly matched
+     */
+    void matchParentheses();
+
 private:
+    /*!
+     * Highlights matching parentheses
+     *
+     * @param pos Position of the cursor to highlight
+     */
+    void createParenthesisSelection(int pos);
     RegularExpressionHighlighter *highlighter; //!< The rules of highlight
 };
 
