@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     node.cpp \
     finite_automata_table.cpp \
     regular_expression_highlighter.cpp \
-    regular_expression_input.cpp
+    regular_expression_input.cpp \
+    regular_expression_tab.cpp
 
 HEADERS  += mainwindow.h \
     finite_automata.h \
@@ -38,7 +39,8 @@ HEADERS  += mainwindow.h \
     node.h \
     finite_automata_table.h \
     regular_expression_highlighter.h \
-    regular_expression_input.h
+    regular_expression_input.h \
+    regular_expression_tab.h
 
 FORMS    += mainwindow.ui
 
