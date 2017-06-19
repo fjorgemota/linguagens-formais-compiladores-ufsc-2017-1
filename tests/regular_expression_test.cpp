@@ -526,3 +526,21 @@ TEST_F(RegularExpressionTest, getAutomataEquivalence12b) {
     ASSERT_FALSE(f1.isEquivalent(f2));
     ASSERT_FALSE(f2.isEquivalent(f1));
 }
+
+TEST_F(RegularExpressionTest, getAutomataTest) {
+    re = new RegularExpression("(a)*(b)");
+    FiniteAutomata f = re->getAutomata();
+
+    ASSERT_TRUE(f.hasState("q0"));
+    ASSERT_TRUE(f.hasState("q1"));
+
+    ASSERT_FALSE(f.isFinalState("q0"));
+    ASSERT_TRUE(f.isFinalState("q1"));
+
+    ASSERT_TRUE(f.hasTransition("q0", 'a', "q0"));
+    ASSERT_TRUE(f.hasTransition("q0", 'b', "q1"));
+    ASSERT_FALSE(f.hasTransition("q1", 'a', "q1"));
+    ASSERT_FALSE(f.hasTransition("q1", 'a', "q0"));
+    ASSERT_FALSE(f.hasTransition("q1", 'b', "q1"));
+    ASSERT_FALSE(f.hasTransition("q1", 'b', "q0"));
+}
