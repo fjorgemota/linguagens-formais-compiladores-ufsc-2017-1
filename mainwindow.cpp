@@ -527,7 +527,7 @@ void MainWindow::setTabName() {
         return;
     }
     QWidget *tab = tabWidget->widget(currentIndex);
-    if (!(dynamic_cast<FiniteAutomataTab* >(tab) || dynamic_cast<OperationTab*>(tab))) {
+    if (!(dynamic_cast<AutomataTab* >(tab) || dynamic_cast<OperationTab*>(tab))) {
         return;
     }
     QString actualName = tabWidget->tabText(currentIndex);
