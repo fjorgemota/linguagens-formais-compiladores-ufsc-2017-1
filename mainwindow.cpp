@@ -38,8 +38,10 @@ QStringList MainWindow::getAutomatasNames() {
     int tabCount = tabWidget->count();
     for (int tab=0; tab<tabCount; tab++) {
         QWidget *widget = tabWidget->widget(tab);
-        if (dynamic_cast<FiniteAutomataTab*>(widget)) {
-            result.append(tabWidget->tabText(tab));
+        if (FiniteAutomataTab *fa = dynamic_cast<FiniteAutomataTab*>(widget)) {
+            if (fa->isValid()) {
+                result.append(tabWidget->tabText(tab));
+            }
         }
     }
     return result;
@@ -53,6 +55,10 @@ void MainWindow::doUnion() {
     QWidget *tab = tabWidget->widget(currentIndex);
     FiniteAutomataTab *fTab = dynamic_cast<FiniteAutomataTab*>(tab);
     if (!fTab) {
+        return;
+    }
+    if (!fTab->isValid()) {
+        QMessageBox::critical(this, "Invalid automata", "The automata actually selected is invalid, please, fix the problems or select another automata", QMessageBox::Ok);
         return;
     }
     bool ok;
@@ -104,7 +110,6 @@ void MainWindow::closeTab(int tab) {
     tabWidget->removeTab(tab);
 }
 
-
 void MainWindow::doIntersection() {
     int currentIndex = tabWidget->currentIndex();
     if (currentIndex < 0) {
@@ -113,6 +118,10 @@ void MainWindow::doIntersection() {
     QWidget *tab = tabWidget->widget(currentIndex);
     FiniteAutomataTab *fTab = dynamic_cast<FiniteAutomataTab*>(tab);
     if (!fTab) {
+        return;
+    }
+    if (!fTab->isValid()) {
+        QMessageBox::critical(this, "Invalid automata", "The automata actually selected is invalid, please, fix the problems or select another automata", QMessageBox::Ok);
         return;
     }
     bool ok;
@@ -151,8 +160,66 @@ void MainWindow::doIntersection() {
     op->addStep(this, f.doComplement(), "This is the complement of the automata '"+name+"':");
     op->addStep(this, f2.doComplement(), "This is the complement of the automata '"+f2Name+"':");
     op->addStep(this, f.doComplement().doIntersection(f2.doComplement()), "Union of the complement of '"+name+"' with the complement of '"+f2Name+"':");
-    op->addStep(this, f.doIntersection(f2), "Complement of the union between the complement of '"+name+"' and the complement of '"+f2Name+"':");
-    int opIndex = tabWidget->addTab(scroll, "Union between '"+name+"' and '"+f2Name+"'");
+    op->addStep(this, f.doIntersection(f2), "Complement of the union between the complement of '"+name+"' and the complement of '"+f2Name+"'  (in other words, the result of the intersection):");
+    int opIndex = tabWidget->addTab(scroll, "Intersection between '"+name+"' and '"+f2Name+"'");
+    tabWidget->setCurrentIndex(opIndex);
+}
+
+void MainWindow::doDifference() {
+    int currentIndex = tabWidget->currentIndex();
+    if (currentIndex < 0) {
+        return;
+    }
+    QWidget *tab = tabWidget->widget(currentIndex);
+    FiniteAutomataTab *fTab = dynamic_cast<FiniteAutomataTab*>(tab);
+    if (!fTab) {
+        return;
+    }
+    if (!fTab->isValid()) {
+        QMessageBox::critical(this, "Invalid automata", "The automata actually selected is invalid, please, fix the problems or select another automata", QMessageBox::Ok);
+        return;
+    }
+    bool ok;
+    QString name = tabWidget->tabText(currentIndex);
+    QString f2Name = QInputDialog::getItem(
+                this,
+                "Select the automata",
+                "Select the automata to realize the difference with '"+name+"':",
+                getAutomatasNames(),
+                0,
+                false,
+                &ok);
+    if (!ok) {
+        return;
+    }
+    QString opName = "op_"+name+"_difference_"+f2Name;
+    OperationTab *op = tabWidget->findChild<OperationTab*>(opName);
+    if (op) {
+        tabWidget->setCurrentWidget(op);
+        return;
+    }
+    FiniteAutomata f = fTab->toAutomata();
+    FiniteAutomataTab *f2Tab = tabWidget->findChild<FiniteAutomataTab*>("tab_"+f2Name);
+    if (!f2Tab) {
+        return;
+    }
+    FiniteAutomata f2 = f2Tab->toAutomata();
+    QScrollArea *scroll = new QScrollArea(this);
+    op = new OperationTab(this);
+    scroll->setWidget(op);
+    scroll->setWidgetResizable(true);
+    op->setObjectName(opName);
+    op->addStep(this, f, "This is the automata '"+name+"':");
+    op->addStep(this, f2, "This is the automata '"+f2Name+"':");
+    op->addStep(this, f2.doComplement(), "This is the complement of the automata '"+f2Name+"':");
+    op->addStep("Then, we do the intersection between '"+name+"' and the complement of '"+f2Name+"'..");
+    op->addStep(this, f.doComplement(), "This is the complement of the automata '"+name+"':");
+    op->addStep(this, f2.doComplement().doComplement(), "This is the complement of the complement of the automata '"+f2Name+"':");
+    op->addStep(this, f.doComplement().doIntersection(f2.doComplement().doComplement()), "Union of the complement of '"+name+"' with the complement of the complement of '"+f2Name+"':");
+    op->addStep(this, f.doIntersection(f2.doComplement()), "Complement of the union between the complement of '"+name+"' and the complement of the complement of '"+f2Name+"' (in other words, the result of the intersection):");
+
+
+    int opIndex = tabWidget->addTab(scroll, "Difference between '"+name+"' and '"+f2Name+"'");
     tabWidget->setCurrentIndex(opIndex);
 }
 

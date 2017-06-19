@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QApplication>
 #include <QInputDialog>
+#include <QMessageBox>
 #include <QMenu>
 #include <QAction>
 #include "finite_automata.h"
@@ -69,16 +70,23 @@ public slots:
     void setTabName();
 
     /*!
-     * Do the union of two automatas, asking for the other
+     * Do the union between two automatas, asking for the other
      * automata first
      */
     void doUnion();
 
     /*!
-     * Do the union of two automatas, asking for the other
+     * Do the intersection between two automatas, asking for the other
      * automata first
      */
     void doIntersection();
+
+
+    /*!
+     * Do the difference between two automatas, asking for the other
+     * automata first
+     */
+    void doDifference();
 
     /*!
      * Fix the menus, enabling and disabling options as needed
