@@ -31,7 +31,10 @@ SOURCES += main.cpp\
     finite_automata_table.cpp \
     finite_automata_tab.cpp \
     operation_tab.cpp \
-    move_to_tab_button.cpp
+    move_to_tab_button.cpp \
+    regular_expression_highlighter.cpp \
+    regular_expression_input.cpp \
+    regular_expression_tab.cpp
 
 HEADERS  += mainwindow.h \
     finite_automata.h \
@@ -40,7 +43,10 @@ HEADERS  += mainwindow.h \
     finite_automata_table.h \
     finite_automata_tab.h \
     operation_tab.h \
-    move_to_tab_button.h
+    move_to_tab_button.h \
+    regular_expression_highlighter.h \
+    regular_expression_input.h \
+    regular_expression_tab.h
 
 FORMS    += mainwindow.ui
 

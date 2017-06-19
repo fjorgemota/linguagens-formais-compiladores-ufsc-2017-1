@@ -6,6 +6,10 @@ RegularExpression::RegularExpression(string re) {
     regex = re;
 }
 
+string RegularExpression::getRegularExpression() {
+    return regex;
+}
+
 int RegularExpression::getLessPriority(string re) {
     int pos = 0;
     int less_priority = 3;
