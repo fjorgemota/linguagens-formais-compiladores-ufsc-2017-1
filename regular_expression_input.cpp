@@ -4,6 +4,7 @@
 RegularExpressionInput::RegularExpressionInput(QWidget *parent)
     : QTextEdit(parent)
 {
+    setAcceptRichText(false);
     QFont font;
     font.setFamily("Courier");
     font.setFixedPitch(true);
