@@ -13,14 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    RegularExpression re("(ab|ac)*a?|(ba?c)*");
-
-    FiniteAutomata f = re.getAutomata();
     tabWidget = this->findChild<QTabWidget*>("tabWidget");
-    FiniteAutomataTab *tab = new FiniteAutomataTab();
-    tab->fromAutomata(f);
-    tab->setObjectName("tab_Test");
-    tabWidget->addTab(tab, "Test");
     fixMenus(0);
 }
 
