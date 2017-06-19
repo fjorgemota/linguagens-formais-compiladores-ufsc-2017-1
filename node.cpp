@@ -38,7 +38,6 @@ Node* Node::getParent() {
         while (parent && parent->right == child) {
             child = parent;
             if (!parent->root) {
-                return parent;
                 break;
             }
             parent = parent->root;
