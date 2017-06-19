@@ -544,3 +544,31 @@ TEST_F(RegularExpressionTest, getAutomataTest) {
     ASSERT_FALSE(f.hasTransition("q1", 'b', "q1"));
     ASSERT_FALSE(f.hasTransition("q1", 'b', "q0"));
 }
+
+TEST_F(RegularExpressionTest, getAutomataPlus) {
+    re = new RegularExpression("(dd)++");
+    FiniteAutomata f = re->getAutomata();
+
+    ASSERT_TRUE(f.hasState("q0"));
+    ASSERT_TRUE(f.hasState("q1"));
+    ASSERT_TRUE(f.hasState("q2"));
+
+    ASSERT_FALSE(f.isFinalState("q0"));
+    ASSERT_FALSE(f.isFinalState("q1"));
+    ASSERT_TRUE(f.isFinalState("q2"));
+
+    ASSERT_FALSE(f.hasTransition("q0", 'd', "q0"));
+    ASSERT_TRUE(f.hasTransition("q0", 'd', "q1"));
+    ASSERT_FALSE(f.hasTransition("q0", 'd', "q2"));
+    ASSERT_FALSE(f.hasTransition("q1", 'd', "q0"));
+    ASSERT_FALSE(f.hasTransition("q1", 'd', "q1"));
+    ASSERT_TRUE(f.hasTransition("q1", 'd', "q2"));
+    ASSERT_FALSE(f.hasTransition("q2", 'd', "q0"));
+    ASSERT_TRUE(f.hasTransition("q2", 'd', "q1"));
+    ASSERT_FALSE(f.hasTransition("q2", 'd', "q2"));
+}
+
+TEST_F(RegularExpressionTest, getRegularExpression) {
+    re = new RegularExpression("(a)*(b)");
+    ASSERT_EQ(re->getRegularExpression(), "(a)*(b)");
+}
