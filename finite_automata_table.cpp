@@ -230,7 +230,7 @@ void FiniteAutomataTable::warn(QTableWidgetItem *cell, string message) {
 set<string> FiniteAutomataTable::getStates() {
     set<string> states;
 
-    int l = this->rowCount();
+    int l = this->rowCount()-1;
     for (int c = 1; c < l; c++) {
         QTableWidgetItem *item = this->item(c, 0);
         if (!item) {
@@ -422,7 +422,7 @@ FiniteAutomata FiniteAutomataTable::toAutomata() {
             continue;
         }
         QString text = item->text();
-        if (!text.size()) {
+        if (text.isEmpty()) {
             continue;
         }
         f.addState(text.toStdString());
@@ -477,6 +477,9 @@ FiniteAutomata FiniteAutomataTable::toAutomata() {
                statesInput.removeAll("-");
            }
            for (QString qstate: statesInput) {
+               if (qstate.isEmpty()) {
+                   continue;
+               }
                string state = qstate.toStdString();
                f.addTransition(fromState, symbol, state);
            }
