@@ -28,13 +28,19 @@ SOURCES += main.cpp\
     finite_automata.cpp \
     regular_expression.cpp \
     node.cpp \
-    finite_automata_table.cpp
+    finite_automata_table.cpp \
+    finite_automata_tab.cpp \
+    operation_tab.cpp \
+    move_to_tab_button.cpp
 
 HEADERS  += mainwindow.h \
     finite_automata.h \
     regular_expression.h \
     node.h \
-    finite_automata_table.h
+    finite_automata_table.h \
+    finite_automata_tab.h \
+    operation_tab.h \
+    move_to_tab_button.h
 
 FORMS    += mainwindow.ui
 
