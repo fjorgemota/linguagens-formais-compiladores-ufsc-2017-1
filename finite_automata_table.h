@@ -96,14 +96,6 @@ private:
     set<string> getStates();
 
     /*!
-     * Return the alphabet registered in the table.
-     *
-     * @return A set of symbols representing the alphabet
-     * detected
-     */
-    set<char> getAlphabet();
-
-    /*!
      * Validate transactions to check if the states present
      * there are valid (e.g do not point to an invalid
      * state)

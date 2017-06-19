@@ -323,24 +323,6 @@ void FiniteAutomataTable::validateStates() {
     }
 }
 
-set<char> FiniteAutomataTable::getAlphabet() {
-    set<char> result;
-    int c = 1;
-    int l = this->columnCount();
-    for (; c < l; c++) {
-        QTableWidgetItem *item = this->item(0, c);
-        if (!item) {
-            continue;
-        }
-        string symbol = item->text().toStdString();
-        if (symbol.empty()) {
-            continue;
-        }
-        result.insert(symbol.at(0));
-    }
-    return result;
-}
-
 void FiniteAutomataTable::fromAutomata(FiniteAutomata &f) {
     set<string> states = f.getStates();
     emit this->clearContents();
@@ -452,7 +434,7 @@ FiniteAutomata FiniteAutomataTable::toAutomata() {
             continue;
         }
         string symbol = item->text().toStdString();
-        if (symbol.empty()) {
+        if (symbol.empty() || symbol.size() > 1 ||  symbol[0] == '&' || ((symbol[0] < '0' || symbol[0] > '9') && (symbol[0] < 'a' || symbol[0] > 'z'))) {
             continue;
         }
         f.addSymbol(symbol.at(0));
