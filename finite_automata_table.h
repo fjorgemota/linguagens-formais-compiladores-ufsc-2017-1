@@ -48,6 +48,21 @@ public:
      * @return true if the data is valid, false otherwise
      */
     bool isValid();
+
+    /*!
+     * Set all the cells of this table as read only.
+     *
+     * @see FiniteAutomataTable::setReadWrite
+     */
+    void setReadOnly();
+
+    /*!
+     * Set all the cells of this table as editable.
+     *
+     * @see FiniteAutomataTable::setReadOnly
+     */
+    void setReadWrite();
+
 private:
     /*!
      * Fill the background of the item with yellow color
@@ -58,6 +73,12 @@ private:
      * background color is set to white.
      */
     void warn(QTableWidgetItem *item, string message = "");
+
+    /*!
+     * Set the delta cell, in the correct position, in a
+     * non editable way
+     */
+    void setDelta();
 
     /*!
      * Return the states registered in the table.

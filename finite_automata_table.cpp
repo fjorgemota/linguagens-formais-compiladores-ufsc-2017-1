@@ -11,14 +11,18 @@ FiniteAutomataTable::FiniteAutomataTable(QWidget *parent) : QTableWidget(parent)
     this->setMouseTracking(true);
     horizontalHeader()->hide();
     verticalHeader()->hide();
+    setDelta();
+    connect(this, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(insertRowOrColumn(QTableWidgetItem*)));
+}
+
+void FiniteAutomataTable::setDelta() {
     QTableWidgetItem *delta = this->item(0, 0);
     if (!delta) {
         delta = new QTableWidgetItem();
+        this->setItem(0, 0, delta);
     }
     delta->setText("𝛿");
     delta->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    this->setItem(0, 0, delta);
-    connect(this, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(insertRowOrColumn(QTableWidgetItem*)));
 }
 
 bool FiniteAutomataTable::isValid() {
@@ -68,6 +72,45 @@ void FiniteAutomataTable::insertRowOrColumn(QTableWidgetItem * item) {
         this->fitTable();
     }
 }
+
+void FiniteAutomataTable::setReadOnly() {
+    int rowCount = this->rowCount();
+    int colCount = this->columnCount();
+    for (int i = 0; i < rowCount; i++) {
+        for (int j = 0; j < colCount; j++) {
+            if (i == 0 && j == 0) {
+                // Do not modify delta!!
+                continue;
+            }
+            QTableWidgetItem *cell = item(i, j);
+            if (!cell) {
+                cell = new QTableWidgetItem();
+                setItem(i, j, cell);
+            }
+            cell->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        }
+    }
+}
+
+void FiniteAutomataTable::setReadWrite() {
+    int rowCount = this->rowCount();
+    int colCount = this->columnCount();
+    for (int i = 0; i < rowCount; i++) {
+        for (int j = 0; j < colCount; j++) {
+            if (i == 0 && j == 0) {
+                // Do not modify delta!!
+                continue;
+            }
+            QTableWidgetItem *cell = item(i, j);
+            if (!cell) {
+                cell = new QTableWidgetItem();
+                setItem(i, j, cell);
+            }
+            cell->setFlags(Qt::ItemIsEditable |Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled |Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled);
+        }
+    }
+}
+
 
 void FiniteAutomataTable::validateTransition(QTableWidgetItem *item, set<string> states) {
     QStringList statesInput = item->text().split(",");
@@ -181,8 +224,16 @@ void FiniteAutomataTable::validateAlphabet() {
             item = new QTableWidgetItem();
             this->setItem(0, c, item);
         }
+        if (c+1 == l) {
+            continue;
+        }
         string symbol = item->text().toStdString();
-        if (symbol.size() != 1 && c+1 < l) {
+
+        if (!symbol.empty() && symbol[0] != '&' && ((symbol[0] < '0' || symbol[0] > '9') && (symbol[0] < 'a' || symbol[0] > 'z'))) {
+            warn(item, "The symbol '"+symbol+"' is not valid");
+            continue;
+        }
+        if (symbol.size() != 1) {
             warn(item, "The symbols of the alphabet should have size 1");
             continue;
         }
@@ -249,6 +300,8 @@ set<char> FiniteAutomataTable::getAlphabet() {
 
 void FiniteAutomataTable::fromAutomata(FiniteAutomata &f) {
     set<string> states = f.getStates();
+    emit this->clearContents();
+    this->setDelta();
     int c = 1;
     bool hasEpsilon = false;
     for (string state: states) {
@@ -333,6 +386,9 @@ string FiniteAutomataTable::fixStateName(string state) {
 }
 
 FiniteAutomata FiniteAutomataTable::toAutomata() {
+    if (!isValid()) {
+        throw new FiniteAutomataException("Invalid automata");
+    }
     FiniteAutomata f;
     int r = this->rowCount()-1;
     for (int c = 1; c < r; c++) {
