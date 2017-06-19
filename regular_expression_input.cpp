@@ -41,6 +41,10 @@ bool RegularExpressionInput::isValid() {
             count_parenthesis--;
         }
 
+        if (RegularExpression::isTerminal(c) && (c < '0' || c > '9') && (c < 'a' || c > 'z')) {
+            return false;
+        }
+
         if (count_parenthesis < 0) {
             return false;
         }
