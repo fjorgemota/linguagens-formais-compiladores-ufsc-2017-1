@@ -43,6 +43,15 @@ class RegularExpression {
      */
     FiniteAutomata getAutomata();
 
+
+    /*!
+     * Check if a character is a terminal
+     *
+     * @param  c The character to check if it is a terminal
+     * @return   true if the character is a terminal, false otherwise
+     */
+    static bool isTerminal(char c);
+
   private:
     /*!
      * Compute the position of the char with the less priority (according to De
@@ -123,15 +132,7 @@ class RegularExpression {
      * @param  c The character to check if it is a multiplier
      * @return   true if the character is a multiplier, false otherwise
      */
-    bool isMultiplier(char c);
-
-    /*!
-     * Check if a character is a terminal
-     *
-     * @param  c The character to check if it is a terminal
-     * @return   true if the character is a terminal, false otherwise
-     */
-    bool isTerminal(char c);
+    static bool isMultiplier(char c);
 
     /*!
      * Check if there should be a concatenation between a character and another

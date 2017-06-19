@@ -1,7 +1,5 @@
 #include "regular_expression.h"
-// #include <fstream>
-template<typename T>
-string printTree(T *root, set<T*> mark);
+
 RegularExpression::RegularExpression(string re) {
     regex = re;
 }
@@ -256,13 +254,6 @@ FiniteAutomata RegularExpression::getAutomata() {
     Node *tree = getTree();
     map<Node*, set<Node*>> compositions = getCompositionPerLeaf(tree);
 
-    // for (auto &trs: compositions) {
-    //     cout << "Node " << trs.first->getValue() << "(" << trs.first << ")" << " => ";
-    //     for (Node* n: trs.second) {
-    //         cout << n->getValue() << "(" << n << "); ";
-    //     }
-    //     cout << endl;
-    // }
     set<Node*> first_composition = getFirstComposition(tree);
 
     set<char> alphabet = getAlphabet(compositions);
@@ -304,12 +295,6 @@ FiniteAutomata RegularExpression::getAutomata() {
             automata.addTransition(nodes[comp], trs.first, nodes[trs.second]);
         }
     }
-    // for (auto &trs: nodes) {
-    //     ofstream myfile;
-    //     myfile.open (trs.second+".gv");
-    //     myfile << printTree(tree, trs.first);
-    //     myfile.close();
-    // }
     return automata;
 }
 
@@ -433,12 +418,3 @@ string printTree(T *root, set<T*> mark) {
     result.append("\n}\n");
     return result;
 }
-//
-// int main() {
-//     RegularExpression re("(ab|ac)*a?|(ba?c)*");
-//     Node* tree = re.getTree();
-//     // cout << printTree(tree);
-//     FiniteAutomata af = re.getAutomata(tree);
-//     cout << af.toASCIITable() << endl;
-//     return 0;
-// }
