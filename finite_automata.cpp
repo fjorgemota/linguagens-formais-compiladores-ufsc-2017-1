@@ -231,7 +231,7 @@ bool FiniteAutomata::isEquivalent(FiniteAutomata other) const {
 }
 
 bool FiniteAutomata::isContained(FiniteAutomata other) const {
-    return doIntersection(other.doComplement()).isEmpty();
+    return doDifference(other).isEmpty();
 }
 
 bool FiniteAutomata::hasTransition(string source, char symbol, string target) {
