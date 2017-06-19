@@ -46,7 +46,8 @@ HEADERS  += mainwindow.h \
     move_to_tab_button.h \
     regular_expression_highlighter.h \
     regular_expression_input.h \
-    regular_expression_tab.h
+    regular_expression_tab.h \
+    automata_tab.h
 
 FORMS    += mainwindow.ui
 

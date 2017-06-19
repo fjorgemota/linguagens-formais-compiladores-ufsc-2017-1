@@ -91,6 +91,29 @@ void FiniteAutomataTable::setReadOnly() {
     }
 }
 
+void FiniteAutomataTable::fromTable(FiniteAutomataTable *table) {
+    int rowCount = table->rowCount();
+    int colCount = table->columnCount();
+    for (int i = 0; i < rowCount; i++) {
+        for (int j = 0; j < colCount; j++) {
+            if (i == 0 && j == 0) {
+                // Do not modify delta!!
+                continue;
+            }
+            QTableWidgetItem *cell = item(i, j);
+            if (!cell) {
+                cell = new QTableWidgetItem();
+                setItem(i, j, cell);
+            }
+            QTableWidgetItem *tableCell = table->item(i, j);
+            if (!tableCell) {
+                continue;
+            }
+            cell->setText(tableCell->text());
+        }
+    }
+}
+
 void FiniteAutomataTable::setReadWrite() {
     int rowCount = this->rowCount();
     int colCount = this->columnCount();
@@ -462,7 +485,12 @@ FiniteAutomata FiniteAutomataTable::toAutomata() {
            if (!item) {
                continue;
            }
-           QStringList statesInput = item->text().split(",");
+           QString stateText = item->text();
+           if (f.hasState(stateText.toStdString())) {
+               f.addTransition(fromState, symbol, stateText.toStdString());
+               continue;
+           }
+           QStringList statesInput = stateText.split(",");
            if (statesInput.size() == 1 && !f.hasState("-")) {
                statesInput.removeAll("-");
            }

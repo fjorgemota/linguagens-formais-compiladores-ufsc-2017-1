@@ -8,11 +8,13 @@
 #include <QMenu>
 #include <QAction>
 #include "finite_automata.h"
-
+#include "automata_tab.h"
 
 namespace Ui {
 class MainWindow;
 }
+
+class OperationTab;
 
 class MainWindow : public QMainWindow
 {
@@ -70,6 +72,12 @@ public slots:
     void setTabName();
 
     /*!
+     * Duplicate the current tab, copying the content to another
+     * tab
+     */
+    void duplicateTab();
+
+    /*!
      * Do the union between two automatas, asking for the other
      * automata first
      */
@@ -81,12 +89,50 @@ public slots:
      */
     void doIntersection();
 
+    /*!
+     * Check if the selected automata is contained in another automata,
+     * asking for that other automata first
+     */
+    void checkContainment();
+
+    /*!
+     * Check if the selected automata is equivalent with another automata,
+     * asking for that other automata first
+     */
+    void checkEquivalence();
 
     /*!
      * Do the difference between two automatas, asking for the other
      * automata first
      */
     void doDifference();
+
+    /*!
+     * Do the complement of the selected automata
+     */
+    void doComplement();
+
+    /*!
+     * Do the conversion to Automata, but only if it is
+     * a Regular Expression
+     */
+    void doConversionToAutomata();
+
+    /*!
+     * Check if a string is accepted by a Finite Automata or
+     * Regular Expresssion
+     */
+    void doAccept();
+
+    /*!
+     * Do the minimization of the selected automata
+     */
+    void doMinimization();
+
+    /*!
+     * Do the determinization of the selected automata
+     */
+    void doDeterminization();
 
     /*!
      * Fix the menus, enabling and disabling options as needed
@@ -111,6 +157,17 @@ private:
     QString findFreeName(QString prefix);
 
     /*!
+     * Check if a tab for an operation is already opened. If it is,
+     * set that tab as current. If it is not, create a new OperationTab,
+     * set all the attributes and set that as current.
+     *
+     * \param opName The name of the tab
+     * \param title The title of the tab
+     * \return  An OperationTab object
+     */
+    OperationTab *getOperationTab(QString opName, QString title);
+
+    /*!
      * Check if a tab already exists
      *
      * @param tabName The name to check for existence
@@ -119,12 +176,22 @@ private:
     bool tabAlreadyExists(QString tabName);
 
     /*!
-     * Return a list of the automatas actually opened
+     * Show the data about a Regular Expression or Finite Automata
+     * before computing the algorithm
+     *
+     * @param op   The OperationTab where the operation is running
+     * \param tab  The Tab that should be printed
+     * \param name The name of the Tab that should be printed
+     */
+    void showAutomata(OperationTab *op, AutomataTab *tab, QString name);
+
+    /*!
+     * Return a list of the items actually opened
      * in the window
      *
-     * @return A list of the names of automatas actually opened
+     * @return A list of the names of items actually opened
      */
-    QStringList getAutomatasNames();
+    QStringList getItemsNames();
 
     Ui::MainWindow *ui; //!< A pointer to the Qt Main Window
     QTabWidget *tabWidget; //!< A pointer to the tab widget present in the main window

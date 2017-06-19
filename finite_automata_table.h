@@ -35,6 +35,13 @@ public:
     void fromAutomata(FiniteAutomata &f);
 
     /*!
+     * Fill this widget with data from another table
+     *
+     * \param f The Finite Automata to use
+     */
+    void fromTable(FiniteAutomataTable *f);
+
+    /*!
      * Exports the data of this widget to a
      * FiniteAutomata object
      *

@@ -2,10 +2,10 @@
 #define FINITE_AUTOMATA_TAB_H
 
 #include <QWidget>
-#include <finite_automata_table.h>
+#include "finite_automata_table.h"
+#include "automata_tab.h"
 
-class FiniteAutomataTab : public QWidget
-{
+class FiniteAutomataTab : public AutomataTab {
     Q_OBJECT
 
 public:
@@ -18,7 +18,6 @@ public:
      */
     explicit FiniteAutomataTab(QWidget *parent = 0);
 
-
     /*!
      * Fill this widget with data from another automata
      *
@@ -27,9 +26,16 @@ public:
     void fromAutomata(FiniteAutomata &f);
 
     /*!
+     * Fill this widget with data from another tab
+     *
+     * @param f The tab to use in the importation
+     */
+    void fromTab(FiniteAutomataTab &f);
+
+    /*!
      * Convert the data in this table to a Automata
      */
-    FiniteAutomata toAutomata();
+    FiniteAutomata toAutomata() override;
 
     /*!
      * Check if the automata present in this tab is
@@ -37,7 +43,7 @@ public:
      *
      * \return true if it is valid, false otherwise
      */
-    bool isValid();
+    bool isValid() override;
 private:
     FiniteAutomataTable *table;
 };

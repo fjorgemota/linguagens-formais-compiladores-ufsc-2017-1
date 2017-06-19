@@ -81,7 +81,7 @@
       <string>New</string>
      </property>
      <addaction name="actionFiniteAutomata"/>
-     <addaction name="actionRegular_Expression_2"/>
+     <addaction name="actionRegularExpression"/>
     </widget>
     <addaction name="menuNew"/>
     <addaction name="separator"/>
@@ -95,7 +95,9 @@
     <addaction name="actionIntersection"/>
     <addaction name="actionDifference"/>
     <addaction name="actionComplement"/>
+    <addaction name="actionContainment"/>
     <addaction name="actionEquivalence"/>
+    <addaction name="actionCheck_if_Accept"/>
     <addaction name="actionDeterminize"/>
     <addaction name="actionMinimize"/>
     <addaction name="separator"/>
@@ -111,6 +113,17 @@
    <addaction name="menuAut_matos"/>
    <addaction name="menuOperations"/>
    <addaction name="menuTabs"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -172,7 +185,7 @@
     <string>Finite Automata</string>
    </property>
   </action>
-  <action name="actionRegular_Expression_2">
+  <action name="actionRegularExpression">
    <property name="text">
     <string>Regular Expression</string>
    </property>
@@ -195,6 +208,16 @@
   <action name="actionClose">
    <property name="text">
     <string>Close</string>
+   </property>
+  </action>
+  <action name="actionContainment">
+   <property name="text">
+    <string>Containment</string>
+   </property>
+  </action>
+  <action name="actionCheck_if_Accept">
+   <property name="text">
+    <string>Check if Accept</string>
    </property>
   </action>
  </widget>
@@ -329,6 +352,150 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionComplement</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>doComplement()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionContainment</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>checkContainment()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionMinimize</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>doMinimization()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionDeterminize</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>doDeterminization()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionEquivalence</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>checkEquivalence()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionDuplicate</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>duplicateTab()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionRegularExpression</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>createNewRegularExpression()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionCheck_if_Accept</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>doAccept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionConvert_to_Automata</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>doConversionToAutomata()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>createNewAutomata()</slot>
@@ -339,10 +506,14 @@
   <slot>doComplement()</slot>
   <slot>doDeterminization()</slot>
   <slot>doMinimization()</slot>
-  <slot>checkEquivalente()</slot>
+  <slot>checkEquivalence()</slot>
   <slot>checkContainment()</slot>
   <slot>toAutomata()</slot>
   <slot>fixMenus(int)</slot>
   <slot>closeTab(int)</slot>
+  <slot>duplicateTab()</slot>
+  <slot>createNewRegularExpression()</slot>
+  <slot>doAccept()</slot>
+  <slot>doConversionToAutomata()</slot>
  </slots>
 </ui>
