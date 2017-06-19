@@ -17,11 +17,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     FiniteAutomata f = re.getAutomata();
     tabWidget = this->findChild<QTabWidget*>("tabWidget");
-//    FiniteAutomataTable *w = new FiniteAutomataTable();
-//    w->fromAutomata(f);
-//    cout << f.toASCIITable() << endl;
-//    cout << w->toAutomata().toASCIITable() << endl;
-//    cout << w->toAutomata().isEquivalent(f) << endl;
     FiniteAutomataTab *tab = new FiniteAutomataTab();
     tab->fromAutomata(f);
     tab->setObjectName("tab_Test");
@@ -98,8 +93,6 @@ void MainWindow::closeTab(int tab) {
     QWidget *widget = tabWidget->widget(tab);
     // Destroy the associated page
     delete widget;
-    // Remove the tab
-    tabWidget->removeTab(tab);
 }
 
 void MainWindow::doIntersection() {
@@ -198,17 +191,12 @@ void MainWindow::doDifference() {
 OperationTab* MainWindow::getOperationTab(QString opName, QString title) {
     OperationTab *op = tabWidget->findChild<OperationTab*>(opName);
     QString scrollName = "scroll_"+opName;
+    QScrollArea *scroll;
     if (op) {
-        delete op;
-        int total = tabWidget->count();
-        for (int c=0; c<total; c++) {
-            if (tabWidget->widget(c)->objectName() == scrollName) {
-                tabWidget->removeTab(c);
-                break;
-            }
-        }
+        scroll = tabWidget->findChild<QScrollArea*>(scrollName);
+        delete scroll;
     }
-    QScrollArea *scroll = new QScrollArea(this);
+    scroll = new QScrollArea(this);
     op = new OperationTab(this);
     scroll->setWidget(op);
     scroll->setWidgetResizable(true);
