@@ -261,26 +261,42 @@ void FiniteAutomataTable::validateStates() {
     map<string, set<QTableWidgetItem*>> result;
     int c = 1;
     int l = this->rowCount();
+    bool hasInitialState = false;
     for (; c < l; c++) {
         QTableWidgetItem *item = this->item(c, 0);
         if (!item) {
             item = new QTableWidgetItem();
             this->setItem(c, 0, item);
         }
-        string state = fixStateName(item->text().toStdString());
-        if (state.empty() && c+1 < l) {
+        warn(item, "");
+        if (c+1 == l) {
+            continue;
+        }
+        string state = item->text().toStdString();
+        if((state.length() > 1 && state[0] == '-' && state[1] == '>') ||
+                (state.length() > 2 && state[1] == '-' && state[2] == '>')) {
+            if (hasInitialState) {
+                warn(item, "A finite automata can have only one initial state");
+            }
+            hasInitialState = true;
+        }
+        state = fixStateName(state);
+        if (state.empty()) {
             warn(item, "State cannot be empty");
             continue;
         }
-        warn(item, "");
         result[state].insert(item);
     }
     for (auto item: result){
-        if (item.second.size() < 2) {
+        if (item.second.size() < 2 && hasInitialState) {
             continue;
         }
         for (QTableWidgetItem *cell: item.second) {
-            warn(cell, "State duplicated: '"+item.first+"'");
+            if (hasInitialState) {
+                warn(cell, "State duplicated: '"+item.first+"'");
+            } else {
+                warn(cell, "At least one should have initial state (starting with '->' without quotes)");
+            }
         }
     }
 }
