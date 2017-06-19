@@ -238,7 +238,7 @@ void MainWindow::checkContainment() {
     QString f2Name = QInputDialog::getItem(
                 this,
                 "Select the automata or regular expression",
-                "Select the automata to check if '"+name+"' inside it:",
+                "Select the automata or regular expression to check if '"+name+"' inside it:",
                 getItemsNames(),
                 0,
                 false,
