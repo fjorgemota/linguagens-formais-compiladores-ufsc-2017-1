@@ -436,11 +436,37 @@ void MainWindow::doMinimization() {
     FiniteAutomata f = fTab->toAutomata();
     showAutomata(op, fTab, name);
     op->addStep(this, f.removeDeadStates(), "This is the automata '"+name+"' without dead states:");
-    op->addStep(this, f.removeDeadStates().removeUnreachableStates(), "This is the automata '"+name+"' without dead states and without unreachable states:");
-    if (f.isDeterministic()) {
-        op->addStep(this, f.removeDeadStates().removeUnreachableStates().removeEquivalentStates(), "This is the automata '"+name+"' without dead states, without unreachable states, and without equivalent states:");
+    FiniteAutomata f2 = f.removeDeadStates();
+    bool hasInitialState = false;
+    for (string state: f2.getStates()) {
+        if (f2.isInitialState(state)) {
+            hasInitialState = true;
+        }
+    }
+    bool partial = false;
+    if (hasInitialState) {
+        f = f2.removeUnreachableStates();
+        op->addStep(this, f, "This is the automata '"+name+"' without dead states and without unreachable states:");
     } else {
+        partial = true;
+        f = f.removeUnreachableStates();
+        op->addStep("The initial state is a dead state, so the automata without dead states is not valid");
+        op->addStep(this, f, "This is the automata '"+name+"' without unreachable states:");
+    }
+    if (f.isDeterministic()) {
+        QString msg;
+        msg.append("This is the automata '"+name+"' without ");
+        if(hasInitialState) {
+            msg.append("dead states, without ");
+        }
+        msg.append("unreachable states, and without equivalent states:");
+        op->addStep(this, f.removeEquivalentStates(), msg);
+    } else {
+        partial = true;
         op->addStep("The step of removing equivalent states was not done because the automata is not deterministic. Please, determinize it and minimize it to remove equivalent states too.");
+    }
+    if (partial) {
+        op->addStep("Note that, because there were steps not made in the process, the automata is not really minimal.");
     }
 }
 
