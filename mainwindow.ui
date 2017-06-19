@@ -281,6 +281,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionIntersection</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>doIntersection()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tabWidget</sender>
+   <signal>tabCloseRequested(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>closeTab(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>148</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>createNewAutomata()</slot>
@@ -295,5 +327,6 @@
   <slot>checkContainment()</slot>
   <slot>toAutomata()</slot>
   <slot>fixMenus(int)</slot>
+  <slot>closeTab(int)</slot>
  </slots>
 </ui>

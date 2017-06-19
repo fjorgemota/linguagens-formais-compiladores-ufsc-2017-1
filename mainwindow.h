@@ -86,6 +86,13 @@ public slots:
      * @param currentIndex The actual tab enabled
      */
     void fixMenus(int currentIndex);
+
+    /*!
+     * Close the table indicated in the index
+     *
+     * @param tab The index of the tab to close
+     */
+    void closeTab(int tab);
 private:
     /*!
      * Find a free name for a tab

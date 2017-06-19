@@ -75,7 +75,6 @@ void MainWindow::doUnion() {
         return;
     }
     FiniteAutomata f = fTab->toAutomata();
-    cout << "tab_"+f2Name.toStdString() << endl;
     FiniteAutomataTab *f2Tab = tabWidget->findChild<FiniteAutomataTab*>("tab_"+f2Name);
     if (!f2Tab) {
         return;
@@ -93,8 +92,68 @@ void MainWindow::doUnion() {
     tabWidget->setCurrentIndex(opIndex);
 }
 
-void MainWindow::doIntersection() {
 
+void MainWindow::closeTab(int tab) {
+    if (tab == 0) {
+        return;
+    }
+    QWidget *widget = tabWidget->widget(tab);
+    // Destroy the associated page
+    delete widget;
+    // Remove the tab
+    tabWidget->removeTab(tab);
+}
+
+
+void MainWindow::doIntersection() {
+    int currentIndex = tabWidget->currentIndex();
+    if (currentIndex < 0) {
+        return;
+    }
+    QWidget *tab = tabWidget->widget(currentIndex);
+    FiniteAutomataTab *fTab = dynamic_cast<FiniteAutomataTab*>(tab);
+    if (!fTab) {
+        return;
+    }
+    bool ok;
+    QString name = tabWidget->tabText(currentIndex);
+    QString f2Name = QInputDialog::getItem(
+                this,
+                "Select the automata",
+                "Select the automata to realize the intersection with '"+name+"':",
+                getAutomatasNames(),
+                0,
+                false,
+                &ok);
+    if (!ok) {
+        return;
+    }
+    QString opName = "op_"+name+"_intersection_"+f2Name;
+    OperationTab *op = tabWidget->findChild<OperationTab*>(opName);
+    if (op) {
+        tabWidget->setCurrentWidget(op);
+        return;
+    }
+    FiniteAutomata f = fTab->toAutomata();
+    cout << "tab_"+f2Name.toStdString() << endl;
+    FiniteAutomataTab *f2Tab = tabWidget->findChild<FiniteAutomataTab*>("tab_"+f2Name);
+    if (!f2Tab) {
+        return;
+    }
+    FiniteAutomata f2 = f2Tab->toAutomata();
+    QScrollArea *scroll = new QScrollArea(this);
+    op = new OperationTab(this);
+    scroll->setWidget(op);
+    scroll->setWidgetResizable(true);
+    op->setObjectName(opName);
+    op->addStep(this, f, "This is the automata '"+name+"':");
+    op->addStep(this, f2, "This is the automata '"+f2Name+"':");
+    op->addStep(this, f.doComplement(), "This is the complement of the automata '"+name+"':");
+    op->addStep(this, f2.doComplement(), "This is the complement of the automata '"+f2Name+"':");
+    op->addStep(this, f.doComplement().doIntersection(f2.doComplement()), "Union of the complement of '"+name+"' with the complement of '"+f2Name+"':");
+    op->addStep(this, f.doIntersection(f2), "Complement of the union between the complement of '"+name+"' and the complement of '"+f2Name+"':");
+    int opIndex = tabWidget->addTab(scroll, "Union between '"+name+"' and '"+f2Name+"'");
+    tabWidget->setCurrentIndex(opIndex);
 }
 
 void MainWindow::fixMenus(int currentIndex) {
