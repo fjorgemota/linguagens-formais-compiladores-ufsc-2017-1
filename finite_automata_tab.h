@@ -5,6 +5,11 @@
 #include "finite_automata_table.h"
 #include "automata_tab.h"
 
+/*!
+ * Implement a Qt Widget that manages a table representing
+ * a FiniteAutomata, so the user can edit and do various
+ * operations with it.
+ */
 class FiniteAutomataTab : public AutomataTab {
     Q_OBJECT
 

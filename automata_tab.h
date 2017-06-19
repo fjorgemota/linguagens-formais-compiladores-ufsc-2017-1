@@ -5,6 +5,13 @@
 #include <QString>
 #include <QObject>
 
+/*!
+ * This class is the base for classes like FiniteAutomataTab
+ * and RegularExpressionTab. The goal is to create a base for
+ * common methods that are used across the operations, so we
+ * can easily detect what can be operated and if it is valid
+ * or not.
+ */
 class AutomataTab : public QWidget {
     Q_OBJECT
 
