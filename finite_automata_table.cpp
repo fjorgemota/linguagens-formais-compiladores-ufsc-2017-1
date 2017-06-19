@@ -59,7 +59,7 @@ void FiniteAutomataTable::insertRowOrColumn(QTableWidgetItem * item) {
     }
 
     // Validate transitions!
-    if (item->row() > 0 && item->column() > 0 && item->text().size() > 1) {
+    if (item->row() > 0 && item->column() > 0) {
         set<string> states = getStates();
         validateTransition(item, states);
         validateAlphabet();
@@ -113,7 +113,12 @@ void FiniteAutomataTable::setReadWrite() {
 
 
 void FiniteAutomataTable::validateTransition(QTableWidgetItem *item, set<string> states) {
-    QStringList statesInput = item->text().split(",");
+    QString itemText = item->text();
+    if (states.count(itemText.toStdString())) {
+        warn(item, "");
+        return;
+    }
+    QStringList statesInput = itemText.split(",");
     if (statesInput.size() == 1 && !states.count("-")) {
         statesInput.removeAll("-");
     }
