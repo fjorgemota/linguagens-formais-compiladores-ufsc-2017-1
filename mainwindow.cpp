@@ -549,7 +549,7 @@ void MainWindow::setTabName() {
             name = actualName;
         }
         used = tabAlreadyExists(name);
-        if (!used && name != actualName) {
+        if (!used || name == actualName) {
             break;
         }
     }
