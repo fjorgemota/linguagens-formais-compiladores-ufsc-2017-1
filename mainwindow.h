@@ -16,6 +16,9 @@ class MainWindow;
 
 class OperationTab;
 
+/*!
+ * Represents the main window of the software
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

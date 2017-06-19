@@ -7,6 +7,10 @@
 #include <QRegularExpression>
 #include <QTextCharFormat>
 
+/*!
+ * Corresponds to a block of text, in this case, the main focus is in
+ * the parentheses presented in the block of text
+ */
 struct BlockData : public QTextBlockUserData {
     QMap<int, int> parenthesis; /**< Maps each parenthesis' position with
                                         the position of the correspondent */
@@ -38,12 +42,18 @@ protected:
     void highlightBlock(const QString &text) override;
 
 private:
+    /*!
+     * Represents a struct of a highlight rule, composed by the pattern
+     * to follow and the format
+     */
     struct HighlightingRule
     {
         QRegularExpression pattern; /**< The pattern that the symbol follows */
-        QTextCharFormat format; /**< The format ("drawing") of the symbol */
+        QTextCharFormat format; /**< The format (color and font) of the symbol*/
     };
-    QVector<HighlightingRule> highlightingRules;
+
+    QVector<HighlightingRule> highlightingRules; //!< Vector with all highlight
+                                                 //!< rules defined in this class
 
     QTextCharFormat star; //!< The text symbol referent to the star operation
     QTextCharFormat plus; //!< The text symbol referent to the plus operation
