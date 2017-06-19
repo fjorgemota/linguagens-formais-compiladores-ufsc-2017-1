@@ -427,12 +427,12 @@ void MainWindow::doMinimization() {
         return;
     }
     QWidget *tab = tabWidget->widget(currentIndex);
-    FiniteAutomataTab *fTab = dynamic_cast<FiniteAutomataTab*>(tab);
+    AutomataTab *fTab = dynamic_cast<AutomataTab*>(tab);
     if (!fTab) {
         return;
     }
     if (!fTab->isValid()) {
-        QMessageBox::critical(this, "Invalid automata", "The automata actually selected is invalid, please, fix the problems before doing this operation", QMessageBox::Ok);
+        QMessageBox::critical(this, "Invalid automata or regular expression", "The automata or regular expression actually selected is invalid, please, fix the problems before doing this operation", QMessageBox::Ok);
         return;
     }
     QString name = tabWidget->tabText(currentIndex);
@@ -441,7 +441,7 @@ void MainWindow::doMinimization() {
         return;
     }
     FiniteAutomata f = fTab->toAutomata();
-    op->addStep(this, f, "This is the automata '"+name+"':");
+    showAutomata(op, fTab, name);
     op->addStep(this, f.removeDeadStates(), "This is the automata '"+name+"' without dead states:");
     op->addStep(this, f.removeDeadStates().removeUnreachableStates(), "This is the automata '"+name+"' without dead states and without unreachable states:");
     if (f.isDeterministic()) {
@@ -458,7 +458,7 @@ void MainWindow::doDeterminization() {
         return;
     }
     QWidget *tab = tabWidget->widget(currentIndex);
-    FiniteAutomataTab *fTab = dynamic_cast<FiniteAutomataTab*>(tab);
+    AutomataTab *fTab = dynamic_cast<AutomataTab*>(tab);
     if (!fTab) {
         return;
     }
@@ -473,7 +473,7 @@ void MainWindow::doDeterminization() {
         return;
     }
     OperationTab *op = getOperationTab("op_"+name+"_determinization", "Determinization of '"+name+"'");
-    op->addStep(this, f, "This is the automata '"+name+"':");
+    showAutomata(op, fTab, name);
     op->addStep(this, f.determinize(), "This is the automata '"+name+"', determined:");
 }
 
@@ -493,8 +493,7 @@ void MainWindow::fixMenus(int currentIndex) {
         }
     } else if(dynamic_cast<RegularExpressionTab*>(tab)) {
         for (QAction* op: operations) {
-            op->setEnabled(op->objectName() != "actionDeterminize" &&
-                    op->objectName() != "actionMinimize");
+            op->setEnabled(true);
         }
         for (QAction* op: tabs) {
             op->setEnabled(true);
